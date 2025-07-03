@@ -41,9 +41,10 @@
 </head>
 <body>
   <div style="position: absolute; top: 60px; left: 10px; z-index: 10;
-            display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+            display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
     
     <button onclick="openFilterModal()" class="custom-button">Filtruj</button>
+    <div id="selectedFilter">Wybrano: najbliższe 3 dni</div>
 
     <input
       type="text"
@@ -67,8 +68,6 @@
       <img src="next.svg" alt="Następny" style="width:16px; height:16px;">
     </button>
 
-    
-    <div id="selectedFilter">Wybrano: najbliższe 3 dni</div>
   </div>
 
   <div id="map"></div>
