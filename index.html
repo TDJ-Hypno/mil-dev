@@ -185,6 +185,7 @@
           const marker=new google.maps.Marker({map,position:pos,optimized:false,zIndex:i,icon:{url:`https://maps.google.com/mapfiles/ms/icons/${col}-dot.png`},title:`${ev.Nazwa}\n${ev['Data od']} – ${ev['Data do']}`});
           markers.push(marker);
           const cs = s>now?`<a href="https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.Nazwa)}&dates=${fmtDate(ev['Data od'])}/${fmtDate(ev['Data do'])}&details=${encodeURIComponent(ev.Informacje+'\n'+ev.Link)}&location=${encodeURIComponent(ev.Adres)}" target="_blank"><button>Dodaj do kalendarza</button></a>`:'';
+          const content=`<div style="font-family:'Arial Black', sans-serif;">                                                       
           <div style="display:flex; gap:6px;">
             <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(ev.Adres)}" target="_blank"><button>Trasa</button></a>
             ${cs}
