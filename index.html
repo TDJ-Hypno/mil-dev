@@ -49,7 +49,7 @@
   <div id="map"></div>
   <div style="position:absolute; bottom:55px; left:10px; display:flex; gap:6px; z-index:5;">
   <div class="info-panel" style="position:static;">
-    TDj "Hypno" (dev0.109)
+    TDj "Hypno" (dev0.110)
   </div>
   <div class="info-panel" id="emailPanel" style="position:static;">
     <img class="legend-icon" src="koperta.svg">
@@ -191,13 +191,41 @@
             ? `<a href="https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.Nazwa)}&dates=${fmtDate(ev['Data od'])}/${fmtDate(ev['Data do'])}&details=${encodeURIComponent(ev.Informacje+'\n'+ev.Link)}&location=${encodeURIComponent(ev.Adres)}" target="_blank"><button>Dodaj do kalendarza</button></a>`
             : '';
 
-          const content=`<div style="font-family:'Arial Black', sans-serif;"><h3>${ev.Nazwa}</h3><p><strong>Adres:</strong> ${ev.Adres}</p><p><strong>Od: </strong>${ev['Data od']}</p><p><strong>Do: </strong>${ev['Data do']}</p><p><strong>Parkietowe: </strong>${ev.Parkietowe}</p><p><strong>Organizator: </strong>${ev.Organizator}</p><p><strong>TDJ: </strong>${ev.TDJ}</p><p><strong>Typ muzyki: </strong>${ev['Typ muzyki']}</p><p><strong>Info: </strong>${ev.Informacje}</p><p><a href="${ev.Link}" target="_blank">Link</a></p><div style="display:flex; gap:6px;">
-            <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(ev.Adres)}" target="_blank">
-              <button>Trasa</button>
-            </a>
-            ${cs}
-          </div>
-      </div>`;
+                    const content = `
+            <div style="
+              font-family: Arial, sans-serif;
+              font-size: 12px;
+              line-height: 1.3;
+            ">
+              <h3 style="
+                margin: 0 0 6px 0;
+                font-family: 'Arial Black', sans-serif;
+              ">
+                ${ev.Nazwa}
+              </h3>
+              <p style="margin:4px 0;"><strong>Adres:</strong> ${ev.Adres}</p>
+              <p style="margin:4px 0;"><strong>Od:</strong> ${ev['Data od']}</p>
+              <p style="margin:4px 0;"><strong>Do:</strong> ${ev['Data do']}</p>
+              <p style="margin:4px 0;"><strong>Parkietowe:</strong> ${ev.Parkietowe}</p>
+              <p style="margin:4px 0;"><strong>Organizator:</strong> ${ev.Organizator}</p>
+              <p style="margin:4px 0;"><strong>TDJ:</strong> ${ev.TDJ}</p>
+              <p style="margin:4px 0;"><strong>Typ muzyki:</strong> ${ev['Typ muzyki']}</p>
+              <p style="margin:4px 0;"><strong>Info:</strong> ${ev.Informacje}</p>
+              <p style="margin:4px 0;">
+                <a href="${ev.Link}" target="_blank">Link</a>
+              </p>
+              <div style="display:flex; gap:6px;">
+                <a
+                  href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(ev.Adres)}"
+                  target="_blank"
+                >
+                  <button>Trasa</button>
+                </a>
+                ${cs}
+              </div>
+            </div>
+          `;
+
           const cleaned = content.replace(/undefined/g, 'b.d.');
           const iw = new google.maps.InfoWindow({ content: cleaned });
           marker.customInfo = cleaned;
