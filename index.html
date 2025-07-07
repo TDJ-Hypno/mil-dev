@@ -251,7 +251,7 @@
             map,
             position: pos,
             optimized: false,
-            zIndex:      i,
+            zIndex:      e < today ? 0 : 1,
             icon:        { url: `https://maps.google.com/mapfiles/ms/icons/${col}-dot.png` },
             title:       `${ev.Nazwa}\n${ev['Data od']} – ${ev['Data do']}`
           });
