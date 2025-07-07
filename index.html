@@ -35,6 +35,15 @@
       background: white;
       cursor: pointer;
     }
+
+    .pulse {
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%   { opacity: 1; }
+      50%  { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
     
   </style>
 </head>
@@ -46,7 +55,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.115)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.116)</div>
   <div class="info-panel" id="emailPanel" style="left: 220px;">
   <img class="legend-icon"
          src="koperta.svg"
@@ -250,12 +259,22 @@
             ? `<p><a href="https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.Nazwa)}&dates=${fmtDate(ev['Data od'])}/${fmtDate(ev['Data do'])}&details=${encodeURIComponent(ev.Informacje + '\n' + ev.Link)}&location=${encodeURIComponent(ev.Adres)}" target="_blank"><button>Dodaj do kalendarza</button></a></p>`
             : '';
       
+          // przygotuj dodatkowe linie dla cyklicznych
+          let cycDetails = '';
+          if (ev['Dzien_tygodnia']) {
+            cycDetails = `
+              <p><strong>Milonga cykliczna:</strong> ${ev['Dzien_tygodnia']}</p>
+              <p class="pulse">Sprawdź u organizatora czy na pewno będzie!!!</p>
+            `;
+          }
+          
           const content = `
             <div style="font-family:'Arial Black', sans-serif;">
               <h3>${ev.Nazwa}</h3>
               <p><strong>Adres:</strong> ${ev.Adres}</p>
               <p><strong>Od: </strong>${ev['Data od']}</p>
               <p><strong>Do: </strong>${ev['Data do']}</p>
+              ${cycDetails}
               <p><strong>Parkietowe: </strong>${ev.Parkietowe}</p>
               <p><strong>Organizator: </strong>${ev.Organizator}</p>
               <p><strong>TDJ: </strong>${ev.TDJ}</p>
