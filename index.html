@@ -46,7 +46,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.114)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.115)</div>
   <div class="info-panel" id="emailPanel" style="left: 220px;">
   <img class="legend-icon"
          src="koperta.svg"
@@ -226,13 +226,23 @@
       
           // tworzenie markera (tak jak w 0.106)
           const zIndexMap = { red: 5, orange: 4, yellow: 3, green: 2, blue: 1 };
+
+          // zbudujmy tooltip (title) uwzględniając dzień tygodnia, jeśli jest
+          let tipTitle = `${ev.Nazwa}`;
+          if (ev['Dzien_tygodnia']) {
+            tipTitle += `\nMilonga cykliczna: ${ev['Dzien_tygodnia']}`;
+            tipTitle += `\nUpewnij się czy będzie!!!`;
+          }
+          tipTitle += `\n${ev['Data od']} – ${ev['Data do']}`;
+          
           const marker = new google.maps.Marker({
             map,
             position: pos,
             optimized: false,
             zIndex:      zIndexMap[col],
             icon:        { url: `https://maps.google.com/mapfiles/ms/icons/${col}-dot.png` },
-            title:       `${ev.Nazwa}\n${ev['Data od']} – ${ev['Data do']}`
+            //title:       `${ev.Nazwa}\n${ev['Data od']} – ${ev['Data do']}`
+            title:  tipTitle
           });
           markers.push(marker);
       
