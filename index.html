@@ -46,7 +46,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.108)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.109)</div>
   <div class="info-panel" id="emailPanel" style="left: 220px;">
   <img class="legend-icon"
          src="koperta.svg"
@@ -180,27 +180,53 @@
         let s = new Date(ev['Data od']),
             e = new Date(ev['Data do']);
       
-        // 2) jeśli jest Dzien_tygodnia → przeliczamy s & e
+        // 2) jeśli jest Dzien_tygodnia lub nazwa zawiera dzień tygodnia → przeliczamy s & e
         const weekdayMap = {
-          niedziela:0, poniedziałek:1, wtorek:2,
-          środa:3, czwartek:4, piątek:5, sobota:6
+          niedziela: 0, poniedziałek: 1, wtorek: 2,
+          środa:     3, czwartek:    4, piątek:   5,
+          sobota:    6
         };
-        const dn = (ev['Dzien_tygodnia']||'').toLowerCase();
+        let dn = (ev['Dzien_tygodnia'] || '').toLowerCase().trim();
+        if (!dn) {
+          const m = ev.Nazwa.match(/\b(niedziela|poniedziałek|wtorek|środa|czwartek|piątek|sobota)\b/i);
+          if (m) dn = m[1].toLowerCase();
+        }
         if (weekdayMap.hasOwnProperty(dn)) {
+          // a) baza = dziś o północy
           const base = new Date(today);
           base.setHours(0,0,0,0);
+          // b) ile dni do wskazanego dnia
           const offset = (weekdayMap[dn] - base.getDay() + 7) % 7;
-          const origS = new Date(s), origE = new Date(e);
+          // c) zachowujemy oryginalne godziny
+          const origS = new Date(s),
+                origE = new Date(e);
+          // d) przeliczony start
           const newS = new Date(base);
           newS.setDate(base.getDate() + offset);
-          newS.setHours(origS.getHours(), origS.getMinutes(), origS.getSeconds(), origS.getMilliseconds());
-          const sd = new Date(origS); sd.setHours(0,0,0,0);
-          const ed = new Date(origE); ed.setHours(0,0,0,0);
-          const dayDiff = Math.round((ed - sd)/(1000*60*60*24));
+          newS.setHours(
+            origS.getHours(),
+            origS.getMinutes(),
+            origS.getSeconds(),
+            origS.getMilliseconds()
+          );
+          // e) ile dni trwało oryg. wydarzenie
+          const dayDiff = Math.round(
+            (new Date(origE).setHours(0,0,0,0)
+             - new Date(origS).setHours(0,0,0,0))
+            / (1000*60*60*24)
+          );
+          // f) nowy koniec
           const newE = new Date(newS);
           newE.setDate(newS.getDate() + dayDiff);
-          newE.setHours(origE.getHours(), origE.getMinutes(), origE.getSeconds(), origE.getMilliseconds());
-          s = newS; e = newE;
+          newE.setHours(
+            origE.getHours(),
+            origE.getMinutes(),
+            origE.getSeconds(),
+            origE.getMilliseconds()
+          );
+          // g) podstawiamy
+          s = newS;
+          e = newE;
         }
       
         // 3) zakresowy filtr (start/koniec w przedziale)
