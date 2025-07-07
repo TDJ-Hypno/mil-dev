@@ -46,7 +46,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.106)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.107)</div>
   <div class="info-panel" id="emailPanel" style="left: 220px;">
   <img class="legend-icon"
          src="koperta.svg"
@@ -176,7 +176,40 @@
       const ended = eventsData.filter(e=>new Date(e['Data do'])<today).sort((a,b)=>new Date(a['Data od'])-new Date(b['Data od']));
       const future=eventsData.filter(e=>new Date(e['Data do'])>=today).sort((a,b)=>new Date(b['Data od'])-new Date(a['Data od']));
       [...ended,...future].forEach((ev,i)=>{
-        const s=new Date(ev['Data od']), e=new Date(ev['Data do']);
+        let s = new Date(ev['Data od']), e = new Date(ev['Data do']);
+
+        // jeżeli podano dzień tygodnia – oblicz datę najbliższego takiego dnia
+        const weekdayMap = {
+          'niedziela': 0, 'poniedziałek': 1, 'wtorek': 2,
+          'środa': 3,     'czwartek': 4,   'piątek': 5,
+          'sobota': 6
+        };
+        const dayName = (ev['Dzien_tygodnia'] || '').toLowerCase();
+        if ( weekdayMap.hasOwnProperty(dayName) ) {
+          // 1) podstawowy start dnia
+          const base = new Date(today);
+          base.setHours(0,0,0,0);
+          // 2) ile dni w przód do wskazanego
+          const offset = (weekdayMap[dayName] - base.getDay() + 7) % 7;
+          // 3) oryginalne godziny
+          const origS = new Date(s),
+                origE = new Date(e);
+          // 4) nowy start = base + offset dni + oryginalna godzina
+          const newS = new Date(base);
+          newS.setDate(base.getDate() + offset);
+          newS.setHours(origS.getHours(), origS.getMinutes(), origS.getSeconds(), origS.getMilliseconds());
+          // 5) oblicz różnicę dni między oryginalnym końcem a startem
+          const startDay = new Date(origS); startDay.setHours(0,0,0,0);
+          const endDay   = new Date(origE); endDay.setHours(0,0,0,0);
+          const dayDiff  = Math.round((endDay - startDay) / (1000*60*60*24));
+          // 6) nowy koniec = newS + dayDiff dni + oryginalna godzina końcowa
+          const newE = new Date(newS);
+          newE.setDate(newS.getDate() + dayDiff);
+          newE.setHours(origE.getHours(), origE.getMinutes(), origE.getSeconds(), origE.getMilliseconds());
+          // 7) podstawiamy
+          s = newS; e = newE;
+        }
+        
         if(s> endDate||e< startDate) return;
         geocoder.geocode({address:ev.Adres},(res,st)=>{ if(st!=='OK') return;
           const pos=res[0].geometry.location;
