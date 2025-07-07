@@ -46,7 +46,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.112)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.113)</div>
   <div class="info-panel" id="emailPanel" style="left: 220px;">
   <img class="legend-icon"
          src="koperta.svg"
@@ -174,79 +174,57 @@
       const geocoder = new google.maps.Geocoder();
       function fmtDate(s){ const d=new Date(s); return d.toISOString().replace(/-|:|\.\d{3}/g,''); }
 
-      // --- nowa pętla po wszystkich wydarzeniach ---
-      eventsData.forEach(ev => {
-        // 1) parsujemy daty
+      // --- przygotuj listę wydarzeń z przeliczonymi datami ---
+      const items = eventsData.map(ev => {
+        // 1) parsujemy oryginalne daty
         let s = new Date(ev['Data od']),
             e = new Date(ev['Data do']);
-      
-        // 2) jeśli jest Dzien_tygodnia lub nazwa zawiera dzień tygodnia → przeliczamy s & e
+        // 2) recalc dla Dzien_tygodnia
         const weekdayMap = {
-          niedziela: 0, poniedziałek: 1, wtorek: 2,
-          środa:     3, czwartek:    4, piątek:   5,
-          sobota:    6
+          niedziela:0, poniedziałek:1, wtorek:2,
+          środa:3, czwartek:4, piątek:5, sobota:6
         };
-        let dn = (ev['Dzien_tygodnia'] || '').toLowerCase().trim();
-        if (!dn) {
-          const m = ev.Nazwa.match(/\b(niedziela|poniedziałek|wtorek|środa|czwartek|piątek|sobota)\b/i);
-          if (m) dn = m[1].toLowerCase();
-        }
+        let dn = (ev['Dzien_tygodnia']||'').toLowerCase().trim();
         if (weekdayMap.hasOwnProperty(dn)) {
-          // a) baza = dziś o północy
           const base = new Date(today);
           base.setHours(0,0,0,0);
-          // b) ile dni do wskazanego dnia
           const offset = (weekdayMap[dn] - base.getDay() + 7) % 7;
-          // c) zachowujemy oryginalne godziny
-          const origS = new Date(s),
-                origE = new Date(e);
-          // d) przeliczony start
+          const origS = new Date(s), origE = new Date(e);
           const newS = new Date(base);
           newS.setDate(base.getDate() + offset);
-          newS.setHours(
-            origS.getHours(),
-            origS.getMinutes(),
-            origS.getSeconds(),
-            origS.getMilliseconds()
-          );
-          // e) ile dni trwało oryg. wydarzenie
-          const dayDiff = Math.round(
-            (new Date(origE).setHours(0,0,0,0)
-             - new Date(origS).setHours(0,0,0,0))
-            / (1000*60*60*24)
-          );
-          // f) nowy koniec
+          newS.setHours(origS.getHours(), origS.getMinutes(), origS.getSeconds(), origS.getMilliseconds());
+          const sd = new Date(origS); sd.setHours(0,0,0,0);
+          const ed = new Date(origE); ed.setHours(0,0,0,0);
+          const dayDiff = Math.round((ed - sd)/(1000*60*60*24));
           const newE = new Date(newS);
           newE.setDate(newS.getDate() + dayDiff);
-          newE.setHours(
-            origE.getHours(),
-            origE.getMinutes(),
-            origE.getSeconds(),
-            origE.getMilliseconds()
-          );
-          // g) podstawiamy
-          s = newS;
-          e = newE;
+          newE.setHours(origE.getHours(), origE.getMinutes(), origE.getSeconds(), origE.getMilliseconds());
+          s = newS; e = newE;
         }
+        return { ev, s, e };
+      })
+      // 3) filtruj wg przedziału
+      .filter(({s,e}) => !(s > endDate || e < startDate))
+      // 4) sortuj malejąco po s → najdalsze jako pierwsze
+      .sort((a,b) => b.s - a.s);
       
-        // 3) zakresowy filtr (start/koniec w przedziale)
-        if (s > endDate || e < startDate) return;
-      
-        // 4) geokoduj i rysuj marker
+      // --- rysuj markery w tej kolejności ---
+      items.forEach(({ev, s, e}, i) => {
         geocoder.geocode({ address: ev.Adres }, (res, st) => {
           if (st !== 'OK') return;
           const pos = res[0].geometry.location;
       
-          // 5) wybór koloru: trwające → czerwony, inaczej wg diff
-          const diff = Math.floor((s - today) / (1000*60*60*24));
+          // wybór koloru jak dotąd
+          const diff = Math.floor((s - today)/(1000*60*60*24));
           let col;
           if (s <= today && e >= today)       col = 'red';
           else if (diff === 0)                col = 'red';
           else if (diff === 1)                col = 'orange';
           else if (diff === 2)                col = 'yellow';
           else if (diff > 2)                  col = 'green';
-          else                                col = 'blue';
+          else                                 col = 'blue';
       
+          // tworzenie markera (tak jak w 0.106)
           const marker = new google.maps.Marker({
             map,
             position: pos,
@@ -256,11 +234,11 @@
             title:       `${ev.Nazwa}\n${ev['Data od']} – ${ev['Data do']}`
           });
           markers.push(marker);
-          
+      
           const cs = s > now
             ? `<p><a href="https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.Nazwa)}&dates=${fmtDate(ev['Data od'])}/${fmtDate(ev['Data do'])}&details=${encodeURIComponent(ev.Informacje + '\n' + ev.Link)}&location=${encodeURIComponent(ev.Adres)}" target="_blank"><button>Dodaj do kalendarza</button></a></p>`
             : '';
-          
+      
           const content = `
             <div style="font-family:'Arial Black', sans-serif;">
               <h3>${ev.Nazwa}</h3>
@@ -277,19 +255,16 @@
               ${cs}
             </div>
           `;
-          
+      
           const cleaned = content.replace(/undefined/g, 'b.d.');
           const iw = new google.maps.InfoWindow({ content: cleaned });
           marker.customInfo = cleaned;
           oms.addMarker(marker);
-        // i dopiero teraz wyświetl na mapie
-        markers.push(marker);
-          // … reszta Twojego kodu dla okienek, kalendarza itp.
         });
       });
-      // --- koniec nowej pętli ---
-    
-      //});
+      
+
+      
     }
 
     document.addEventListener('DOMContentLoaded',()=>{
