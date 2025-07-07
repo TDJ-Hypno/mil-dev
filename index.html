@@ -46,7 +46,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.113)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.114)</div>
   <div class="info-panel" id="emailPanel" style="left: 220px;">
   <img class="legend-icon"
          src="koperta.svg"
@@ -225,11 +225,12 @@
           else                                 col = 'blue';
       
           // tworzenie markera (tak jak w 0.106)
+          const zIndexMap = { red: 5, orange: 4, yellow: 3, green: 2, blue: 1 };
           const marker = new google.maps.Marker({
             map,
             position: pos,
             optimized: false,
-            zIndex:      e < today ? 0 : 1,
+            zIndex:      zIndexMap[col],
             icon:        { url: `https://maps.google.com/mapfiles/ms/icons/${col}-dot.png` },
             title:       `${ev.Nazwa}\n${ev['Data od']} – ${ev['Data do']}`
           });
