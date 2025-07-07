@@ -46,7 +46,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.110)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.111)</div>
   <div class="info-panel" id="emailPanel" style="left: 220px;">
   <img class="legend-icon"
          src="koperta.svg"
@@ -248,14 +248,26 @@
           else                                col = 'blue';
       
           const marker = new google.maps.Marker({
-            map,
-            position: pos,
-            optimized: false,
-            zIndex:      e < today ? 0 : 1,
-            icon:        { url: `https://maps.google.com/mapfiles/ms/icons/${col}-dot.png` },
-            title:       `${ev.Nazwa}\n${s.toLocaleString()} – ${e.toLocaleString()}`
-          });
-          markers.push(marker);
+          map,
+          position: pos,
+          optimized: false,
+          zIndex:      e < today ? 0 : 1,
+          icon:        { url: `https://maps.google.com/mapfiles/ms/icons/${col}-dot.png` },
+          title:       `${ev.Nazwa}\n${s.toLocaleString()} – ${e.toLocaleString()}`
+        });
+        // przygotuj treść okienka po kliknięciu
+        marker.customInfo = `
+          <div style="font-family:'Arial Black',sans-serif;">
+            <h3>${ev.Nazwa}</h3>
+            <p><strong>Od:</strong> ${s.toLocaleString()}</p>
+            <p><strong>Do:</strong> ${e.toLocaleString()}</p>
+            <p><strong>Adres:</strong> ${ev.Adres}</p>
+          </div>
+        `;
+        // dodaj marker do spiderfiera, aby rozplątać nakładające się
+        oms.addMarker(marker);
+        // i dopiero teraz wyświetl na mapie
+        markers.push(marker);
           // … reszta Twojego kodu dla okienek, kalendarza itp.
         });
       });
