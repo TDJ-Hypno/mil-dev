@@ -28,7 +28,7 @@
     
     .info-panel {
         position: absolute;
-        bottom: 100px;
+        bottom: 70px;
         left: 10px;
         background: lightgray;
         padding: 8px 12px;
@@ -41,7 +41,7 @@
     
     .visit-panel {
         position: absolute;
-        bottom: 60px;
+        bottom: 45px;
         left: 10px;
         background: lightgray;
         padding: 8px 12px;
@@ -142,16 +142,24 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.119)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.120)</div>
   <div class="info-panel" id="emailPanel" style="left: 220px;">
-  
-  <img class="legend-icon"
-         src="koperta.svg"
-  </div>
 
   <div class="visit-panel">
     Gości: <span id="visit-count">–</span>
   </div>
+
+  <div class="legend">
+    <div><img class="legend-icon" src="https://maps.google.com/mapfiles/ms/icons/red-dot.png"> Dzisiaj</div>
+    <div><img class="legend-icon" src="https://maps.google.com/mapfiles/ms/icons/orange-dot.png"> Jutro</div>
+    <div><img class="legend-icon" src="https://maps.google.com/mapfiles/ms/icons/yellow-dot.png"> Pojutrze</div>
+    <div><img class="legend-icon" src="https://maps.google.com/mapfiles/ms/icons/green-dot.png"> Kolejne</div>
+    <div><img class="legend-icon" src="https://maps.google.com/mapfiles/ms/icons/blue-dot.png"> Zakończone</div>
+  </div>
+    
+  <img class="legend-icon"
+         src="koperta.svg"
+  </div>  
 
   <div id="emailTooltip">
     <p>Chcesz wysłać email z informacją o nowym wydarzeniu tangowym?</p>
@@ -164,13 +172,7 @@
     <button id="contactYes">Tak</button>
     <button id="contactNo">Nie</button>
   </div>
-  <div class="legend">
-    <div><img class="legend-icon" src="https://maps.google.com/mapfiles/ms/icons/red-dot.png"> Dzisiaj</div>
-    <div><img class="legend-icon" src="https://maps.google.com/mapfiles/ms/icons/orange-dot.png"> Jutro</div>
-    <div><img class="legend-icon" src="https://maps.google.com/mapfiles/ms/icons/yellow-dot.png"> Pojutrze</div>
-    <div><img class="legend-icon" src="https://maps.google.com/mapfiles/ms/icons/green-dot.png"> Kolejne</div>
-    <div><img class="legend-icon" src="https://maps.google.com/mapfiles/ms/icons/blue-dot.png"> Zakończone</div>
-  </div>
+  
 
   <!-- Modal filtrów -->
   <div id="filterModal" style="display:none; position:fixed; top:50px; left:50%; transform:translateX(-50%); background:lightgray; padding:20px; border:1px solid #ccc; z-index:1000; border-radius:8px;">
