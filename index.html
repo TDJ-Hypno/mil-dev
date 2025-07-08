@@ -148,14 +148,14 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.123)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.124)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 220px;">
     <img class="legend-icon" src="koperta.svg" alt="koperta">
   </div>
   
   <div class="visit-panel">
-    Gości <span id="visit-count">–</span>
+    <span id="visit-count">–</span>
   </div>
   
   <div class="legend">
@@ -473,7 +473,7 @@ window.addEventListener('load', () => {
         .filter(r => r.country !== 'ALL' && Number(r.visits) > 0)
         .length;
       document.getElementById('visit-count').textContent =
-        `${total} z krajów: ${countries}`;
+        `${total} gości z ${countries} krajów.`;
     })
     .catch(err => console.error('Błąd pobierania statystyk:', err));
 });
