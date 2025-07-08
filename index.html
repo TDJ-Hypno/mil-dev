@@ -148,7 +148,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.125)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.126)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 220px;">
     <img class="legend-icon" src="koperta.svg" alt="koperta">
@@ -464,20 +464,29 @@
   </script>
 
   <script>
-window.addEventListener('load', () => {
-  fetch('https://script.google.com/macros/s/AKfycbzCl_Hw4habSe6A2tkiqJ6iZcz_2Fh2HI8Txzeb_26yCsZOcRePZuWw4z3sDhhwL1mcKw/exec')
-    .then(r => r.json())
-    .then(data => {
-      const total = Number(data.find(r => r.country === 'ALL').visits);
-      const countries = data
-        .filter(r => r.country !== 'ALL' && Number(r.visits) > 0)
-        .length;
-      document.getElementById('visit-count').textContent =
-        `${total} gości z ${countries} krajów`;
-    })
-    .catch(err => console.error('Błąd pobierania statystyk:', err));
-});
-</script>
+  window.addEventListener('load', async () => {
+      const VISIT_API = 'https://script.google.com/macros/s/.../exec';  // Twój URL
+      try {
+        // 1) Pobierz informacje geolokalizacyjne
+        const geo = await fetch('https://ipapi.co/json').then(r => r.json());
+        const country = (geo.country_code || 'ALL').toUpperCase();
+        
+        // 2) Wez Web App z parametrem country
+        const res = await fetch(`${VISIT_API}?country=${country}`);
+        const stats = await res.json();  // to będzie tablica z obiektami {country, visits}
+        
+        // 3) Oblicz sumę i liczbę krajów
+        const total    = stats.find(r => r.country === 'ALL').visits;
+        const countries= stats.filter(r => r.country !== 'ALL' && r.visits > 0).length;
+        
+        // 4) Wstaw do panelu
+        document.getElementById('visit-count').textContent =
+          `${total} z krajów: ${countries}`;
+      } catch (err) {
+        console.error('Błąd pobierania statystyk:', err);
+      }
+    });
+  </script>
   
 </body>
 </html>
