@@ -148,14 +148,14 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.122)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.123)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 220px;">
     <img class="legend-icon" src="koperta.svg" alt="koperta">
   </div>
   
   <div class="visit-panel">
-    Gości: <span id="visit-count">–</span>
+    Gości <span id="visit-count">–</span>
   </div>
   
   <div class="legend">
@@ -464,19 +464,20 @@
   </script>
 
   <script>
-    // adres Twojego Web App (Apps Script doGet)
-    const VISIT_API = 'https://tdj-hypno.github.io/mil-dev/';
-  
-    window.addEventListener('load', () => {
-      fetch(VISIT_API)
-        .then(res => res.json())
-        .then(json => {
-          document.getElementById('visit-count').textContent = json.visits;
-        })
-        .catch(err => console.error('Błąd pobierania licznika:', err));
-    });
-  </script>
-
+window.addEventListener('load', () => {
+  fetch('https://opensheet.elk.sh/1_6bzYSjQZac-QkAytaJD0D81YXcFSOe72Su024smcl0/Stats')
+    .then(r => r.json())
+    .then(data => {
+      const total = Number(data.find(r => r.country === 'ALL').visits);
+      const countries = data
+        .filter(r => r.country !== 'ALL' && Number(r.visits) > 0)
+        .length;
+      document.getElementById('visit-count').textContent =
+        `${total} z krajów: ${countries}`;
+    })
+    .catch(err => console.error('Błąd pobierania statystyk:', err));
+});
+</script>
   
 </body>
 </html>
