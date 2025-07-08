@@ -66,6 +66,9 @@
   <div id="map"></div>
   <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.119)</div>
   <div class="info-panel" id="emailPanel" style="left: 220px;">
+  <div class="visit-panel">
+    Gości: <span id="visit-count">–</span>
+  </div>
   <img class="legend-icon"
          src="koperta.svg"
          //alt="koperta">
@@ -372,6 +375,21 @@
     document.getElementById('emailTooltip').style.display = 'none';
   };
   </script>
+
+  <script>
+    // adres Twojego Web App (Apps Script doGet)
+    const VISIT_API = 'https://tdj-hypno.github.io/mil-dev/';
+  
+    window.addEventListener('load', () => {
+      fetch(VISIT_API)
+        .then(res => res.json())
+        .then(json => {
+          document.getElementById('visit-count').textContent = json.visits;
+        })
+        .catch(err => console.error('Błąd pobierania licznika:', err));
+    });
+  </script>
+
   
 </body>
 </html>
