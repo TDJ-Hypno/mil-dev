@@ -1,24 +1,21 @@
 // settings.js
 
-function handleSettingsClick() {
-  // pokaż modal Ustawień
-  document.getElementById('settingsModal').style.display = 'block';
-}
+// znajdź elementy
+const btn   = document.getElementById('settingsPanel');
+const modal = document.getElementById('settingsModal');
 
-document.addEventListener('DOMContentLoaded', () => {
-  // istniejący listener na przycisk “Ustawienia”
-  const btn = document.getElementById('settingsPanel');
-  btn.addEventListener('click', handleSettingsClick);
-
-  // zamknij modal po kliknięciu poza nim
-  window.addEventListener('click', e => {
-    const modal = document.getElementById('settingsModal');
-    if (modal.style.display === 'block' && !modal.contains(e.target) && e.target.id !== 'settingsPanel') {
-      modal.style.display = 'none';
-    }
-  });
-
-  // tymczasowo: przycisk “Dodaj skrót” tylko wyświetla alert
-  document.getElementById('addShortcutBtn')
-    .addEventListener('click', () => alert('Tu uruchomisz kod tworzący skrót PWA'));
+// 1) klik → pokaz
+btn.addEventListener('click', () => {
+  modal.style.display = 'block';
 });
+
+// 2) klik na obszar poza zawartością modala → ukryj
+modal.addEventListener('click', e => {
+  if (e.target === modal) {
+    modal.style.display = 'none';
+  }
+});
+
+// 3) przycisk w modalu (na razie alert)
+document.getElementById('addShortcutBtn')
+  .addEventListener('click', () => alert('Dodaj skrót'));
