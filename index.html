@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <title>Mapa milong</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  /* pomniejszamy przycisk Ustawień o 20% względem oryginału */
+  #settingsPanel {
+    transform: scale(0.8);
+    transform-origin: bottom left;
+  }
+  
   <style>
     html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; }
     #map { height: 100%; width: 100%; }
@@ -148,9 +155,9 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.128)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.129)</div>
 
-  <div class="info-panel" id="emailPanel" style="left: 220px;">
+  <div class="info-panel" id="emailPanel" style="left: 250px;">
   
     
     <img class="legend-icon" src="koperta.svg" alt="koperta">
