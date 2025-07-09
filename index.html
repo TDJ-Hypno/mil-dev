@@ -170,7 +170,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.135)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.136)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -472,6 +472,17 @@
     window.initMap = initMap;
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js"></script>
+
+  <script>
+    // 1) złap prompt instalacji PWA
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+  </script>
+
+  
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAjzcvQPS-dgli4FvWTMnUgkB0Fr4hbkdQ&callback=initMap"></script>
 
   <script>
@@ -569,21 +580,11 @@
     </script>
   
     <script>
-    // 2) Gdy klikniesz “Dodaj skrót do pulpitu”...
-    document.getElementById('addShortcutBtn').addEventListener('click', async () => {
-      if (!deferredPrompt) {
-        
-        return;
-      }
-      // pokaż natywny dialog “Add to Home screen”
+      document.getElementById('addShortcutBtn').addEventListener('click', async () => {
+      if (!deferredPrompt) return;
       deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      if (choice.outcome === 'accepted') {
-        console.log('Użytkownik zaakceptował instalację');
-      } else {
-        console.log('Użytkownik odrzucił instalację');
-      }
-      // nie wywołuj prompt ponownie
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log('User choice:', outcome);
       deferredPrompt = null;
     });
   </script>
