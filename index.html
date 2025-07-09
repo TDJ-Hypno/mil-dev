@@ -170,7 +170,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.132)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.133)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -563,14 +563,47 @@
   </script>
 
   <script>
-  if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-                 .register('sw.js')
-                 .catch(err => console.error('SW failed:', err));
-      });
-    }
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker
+                   .register('sw.js')
+                   .catch(err => console.error('SW failed:', err));
+        });
+      }
+    </script>
+  
+    <script>
+    // 2) Gdy klikniesz “Dodaj skrót do pulpitu”...
+    document.getElementById('addShortcutBtn').addEventListener('click', async () => {
+      if (!deferredPrompt) {
+        alert('Instalacja niedostępna w tej przeglądarce.');
+        return;
+      }
+      // pokaż natywny dialog “Add to Home screen”
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        console.log('Użytkownik zaakceptował instalację');
+      } else {
+        console.log('Użytkownik odrzucił instalację');
+      }
+      // nie wywołuj prompt ponownie
+      deferredPrompt = null;
+    });
   </script>
+
+  <script>
+    let deferredPrompt;
+  
+    window.addEventListener('beforeinstallprompt', e => {
+      // stop the automatic mini-infobar
+      e.preventDefault();
+      deferredPrompt = e;
+      // now your "Dodaj skrót" button can use it
+    });
+  </script>
+
+  
   
 </body>
   
