@@ -1,15 +1,24 @@
 // settings.js
 
-// Funkcja wywoływana przy kliknięciu przycisku Ustawień
 function handleSettingsClick() {
-  // TODO: tu dodaj swoją logikę, np. otwarcie dialogu ustawień
-  console.log('Kliknięto Ustawienia');
+  // pokaż modal Ustawień
+  document.getElementById('settingsModal').style.display = 'block';
 }
 
-// Po załadowaniu DOM-u rejestrujemy listener
 document.addEventListener('DOMContentLoaded', () => {
+  // istniejący listener na przycisk “Ustawienia”
   const btn = document.getElementById('settingsPanel');
-  if (btn) {
-    btn.addEventListener('click', handleSettingsClick);
-  }
+  btn.addEventListener('click', handleSettingsClick);
+
+  // zamknij modal po kliknięciu poza nim
+  window.addEventListener('click', e => {
+    const modal = document.getElementById('settingsModal');
+    if (modal.style.display === 'block' && !modal.contains(e.target) && e.target.id !== 'settingsPanel') {
+      modal.style.display = 'none';
+    }
+  });
+
+  // tymczasowo: przycisk “Dodaj skrót” tylko wyświetla alert
+  document.getElementById('addShortcutBtn')
+    .addEventListener('click', () => alert('Tu uruchomisz kod tworzący skrót PWA'));
 });
