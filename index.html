@@ -215,6 +215,21 @@
     <button onclick="applyFilter()">Filtruj</button>
   </div>
 
+  <!-- Modal Ustawień -->
+  <div id="settingsModal" style="display:none;
+      position:fixed;
+      top:50px;
+      left:50%;
+      transform:translateX(-50%);
+      background:lightgray;
+      padding:20px;
+      border:1px solid #ccc;
+      z-index:1000;
+    border-radius:8px;">
+    <h3>Ustawienia</h3>
+    <button id="addShortcutBtn">Dodaj skrót do pulpitu</button>
+  </div>
+
   <script>
     let map, oms, markers = [], eventsData = [], nightMode = false;
 
