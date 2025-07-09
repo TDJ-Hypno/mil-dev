@@ -144,6 +144,19 @@
       transform: scale(0.8);
       transform-origin: bottom left;
     }
+
+    /* mały X w prawym górnym rogu modala */
+    #settingsModal {
+      position: relative; /* aby X mógł być absolutnie w nim pozycjonowany */
+    }
+    #closeSettingsBtn {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
     
   </style>
 </head>
@@ -155,7 +168,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.131)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.132)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -227,6 +240,7 @@
       z-index:1000;
     border-radius:8px;">
     <h3>Ustawienia</h3>
+    <span id="closeSettingsBtn">×</span>
     <button id="addShortcutBtn">Dodaj skrót do pulpitu</button>
   </div>
 
@@ -536,6 +550,14 @@
     // 3) przycisk w modalu (na razie alert)
     document.getElementById('addShortcutBtn')
       .addEventListener('click', () => alert('Dodaj skrót'));  
+  </script>
+
+  <script>
+  // zamknij modal po kliknięciu X
+  document.getElementById('closeSettingsBtn')
+    .addEventListener('click', () => {
+      document.getElementById('settingsModal').style.display = 'none';
+    });
   </script>
   
 </body>
