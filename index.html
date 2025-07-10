@@ -170,7 +170,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.138)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.139)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -560,41 +560,26 @@
   </script>
 
   <script>
-      if ('serviceWorker' in navigator) {
-          window.addEventListener('load', () => {
-            navigator.serviceWorker
-                     .register('sw.js')
-                     .catch(err => console.error('SW failed:', err));
-          });
-        }
-      </script>
-    
-      <script>
-    // 1) Zarejestruj Service Worker (jeżeli przeglądarka to wspiera)
+    // 1) Rejestruj SW
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('sw.js')
-          .catch(err => console.error('SW failed:', err));
-      });
+      window.addEventListener('load', () =>
+        navigator.serviceWorker.register('sw.js').catch(console.error)
+      );
     }
-  
-    // 2) Przechwyć event beforeinstallprompt
+    // 2) Przechwyć prompt
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', e => {
       e.preventDefault();
       deferredPrompt = e;
     });
-  
-    // 3) Obsłuż kliknięcie przycisku „Dodaj skrót do pulpitu”
-    document.getElementById('addShortcutBtn')
-      .addEventListener('click', async () => {
-        if (!deferredPrompt) return;       // brak wsparcia → nic nie rób
-        deferredPrompt.prompt();           // otwórz dialog PWA
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log('Install choice:', outcome);
-        deferredPrompt = null;             // jednorazowe użycie
-      });
+    // 3) Hook przycisk
+    document.getElementById('addShortcutBtn').addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log('Install choice:', outcome);
+      deferredPrompt = null;
+    });
   </script>
 
   
