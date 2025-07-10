@@ -1,7 +1,8 @@
 {
   "name": "WhereIsMilonga",
   "short_name": "WhereIsMilonga",
-  "start_url": "/mil-dev/",
+  "start_url": ".",
+  "scope": ".",
   "display": "standalone",
   "icons": [
     {
