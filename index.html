@@ -6,6 +6,9 @@
   <meta name="theme-color" content="#ffffff">
   <title>Mapa milong</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ffffff">
   
   <style>
     html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; }
@@ -580,14 +583,16 @@
     </script>
   
     <script>
-      document.getElementById('addShortcutBtn').addEventListener('click', async () => {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log('User choice:', outcome);
-      deferredPrompt = null;
-    });
-  </script>
+      document.getElementById('addShortcutBtn')
+        .addEventListener('click', async () => {
+          if (!deferredPrompt) return;
+          // pokaż natywny prompt
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log('User choice:', outcome);
+          deferredPrompt = null;
+        });
+    </script>
 
   <script>
     let deferredPrompt;
@@ -600,7 +605,23 @@
     });
   </script>
 
-  
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .catch(err => console.error('SW registration failed:', err));
+      });
+    }
+  </script>
+
+  <script>
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+  </script>
+
   
 </body>
   
