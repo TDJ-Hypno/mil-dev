@@ -6,10 +6,7 @@
   <meta name="theme-color" content="#ffffff">
   <title>Mapa milong</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#ffffff">
-  
+ 
   <style>
     html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; }
     #map { height: 100%; width: 100%; }
@@ -173,7 +170,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.137)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.138)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -475,17 +472,7 @@
     window.initMap = initMap;
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js"></script>
-
-  <script>
-    // 1) złap prompt instalacji PWA
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', e => {
-      e.preventDefault();
-      deferredPrompt = e;
-    });
-  </script>
-
-  
+ 
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAjzcvQPS-dgli4FvWTMnUgkB0Fr4hbkdQ&callback=initMap"></script>
 
   <script>
@@ -573,55 +560,44 @@
   </script>
 
   <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker
-                   .register('sw.js')
-                   .catch(err => console.error('SW failed:', err));
-        });
-      }
-    </script>
-  
-    <script>
-      document.getElementById('addShortcutBtn')
-        .addEventListener('click', async () => {
-          if (!deferredPrompt) return;
-          // pokaż natywny prompt
-          deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
-          console.log('User choice:', outcome);
-          deferredPrompt = null;
-        });
-    </script>
-
-  <script>
-    let deferredPrompt;
-  
-    window.addEventListener('beforeinstallprompt', e => {
-      // stop the automatic mini-infobar
-      e.preventDefault();
-      deferredPrompt = e;
-      // now your "Dodaj skrót" button can use it
-    });
-  </script>
-
-  <script>
+      if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker
+                     .register('sw.js')
+                     .catch(err => console.error('SW failed:', err));
+          });
+        }
+      </script>
+    
+      <script>
+    // 1) Zarejestruj Service Worker (jeżeli przeglądarka to wspiera)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .catch(err => console.error('SW registration failed:', err));
+        navigator.serviceWorker
+          .register('sw.js')
+          .catch(err => console.error('SW failed:', err));
       });
     }
-  </script>
-
-  <script>
+  
+    // 2) Przechwyć event beforeinstallprompt
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', e => {
       e.preventDefault();
       deferredPrompt = e;
     });
+  
+    // 3) Obsłuż kliknięcie przycisku „Dodaj skrót do pulpitu”
+    document.getElementById('addShortcutBtn')
+      .addEventListener('click', async () => {
+        if (!deferredPrompt) return;       // brak wsparcia → nic nie rób
+        deferredPrompt.prompt();           // otwórz dialog PWA
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('Install choice:', outcome);
+        deferredPrompt = null;             // jednorazowe użycie
+      });
   </script>
 
+  
   
 </body>
   
