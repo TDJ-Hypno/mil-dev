@@ -170,7 +170,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.140)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.141)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -573,11 +573,8 @@
       deferredPrompt = e;
     });
     // 3) Hook przycisk
-    document.getElementById('addShortcutBtn').addEventListener('click', async () => {
-      console.log('🔥 beforeinstallprompt fired');
-      e.preventDefault();
-      deferredPrompt = e;
-      
+    document.getElementById('addShortcutBtn')
+    .addEventListener('click', async () => {
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
