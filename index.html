@@ -170,7 +170,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.147)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.148)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -427,7 +427,7 @@
             tipTitle += `\nMilonga cykliczna: ${ev['Dzien_tygodnia']}`;
             tipTitle += `\nUpewnij się czy będzie!!!`;
           }
-          tipTitle += `\n${ev['Data od']} – ${ev['Data do']}`;
+          tipTitle += `\n${s.toLocaleString()} – ${e.toLocaleString()}`;
           
           const marker = new google.maps.Marker({
             map,
@@ -457,8 +457,8 @@
             <div style="font-family:'Arial Black', sans-serif;">
               <h3>${ev.Nazwa}</h3>
               <p><strong>Adres:</strong> ${ev.Adres}</p>
-              <p><strong>Od: </strong>${ev['Data od']}</p>
-              <p><strong>Do: </strong>${ev['Data do']}</p>
+              <p><strong>Od: </strong>${s.toLocaleString()}</p>
+              <p><strong>Do: </strong>${e.toLocaleString()}</p>
               ${cycDetails}
               <p><strong>Parkietowe: </strong>${ev.Parkietowe}</p>
               <p><strong>Organizator: </strong>${ev.Organizator}</p>
