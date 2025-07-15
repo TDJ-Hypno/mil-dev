@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.150)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.151)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -250,6 +250,21 @@
       <option value="range">w zakresie</option>
       <option value="ended">zakończone</option>
     </select><br><br>
+
+    <!-- Panel debug -->
+    <div id="debugPanel" style="
+        max-height: 200px;
+        overflow-y: auto;
+        background: rgba(0,0,0,0.7);
+        color: #fff;
+        padding: 8px;
+        font-size: 12px;
+        font-family: monospace;
+        border-radius: 4px;
+        margin-top: 8px;
+    "></div>
+
+    
     <div id="dateInputs" style="display:none;">
       <label>Od: <input type="date" id="dateFrom"></label><br><br>
       <label>Do: <input type="date" id="dateTo"></label><br><br>
@@ -377,6 +392,36 @@
             // zachowujemy tylko te z niepustym Dzien_tygodnia
             eventsData = eventsData.filter(e => e['Dzien_tygodnia']);
           }
+
+          // debugowanie: pokaż eventy z przelicznymi datami i czy są w bieżącym filtrze
+          const debugEl = document.getElementById('debugPanel');
+          if (debugEl) {
+            const lines = eventsData.map(ev => {
+              // 1) oblicz s,i e dokładnie tak jak w displayEvents:
+              let s, e;
+              if (ev['Dzien_tygodnia']) {
+                const dayNames = ['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
+                const idx = dayNames.indexOf(ev['Dzien_tygodnia'].toLowerCase());
+                s = new Date();
+                s.setDate(s.getDate() - s.getDay() + idx);
+                const origS = new Date(ev['Data od']);
+                s.setHours(origS.getHours(), origS.getMinutes(), origS.getSeconds());
+                const origE = new Date(ev['Data do']);
+                e = new Date(s);
+                e.setDate(s.getDate() + (origE.getDate() - origS.getDate()));
+                e.setHours(origE.getHours(), origE.getMinutes(), origE.getSeconds());
+              } else {
+                s = new Date(ev['Data od']);
+                e = new Date(ev['Data do']);
+              }
+              // 2) sprawdź, czy event mieści się w filtrze
+              const included = (s >= from && s <= to) || (e >= from && e <= to);
+              // 3) zbuduj linię z nazwą, datami i ✔/✘ 
+              return `${ev.Nazwa}: ${s.toLocaleString()} – ${e.toLocaleString()} → ${included ? '✔' : '✘'}`;
+            });
+            debugEl.innerHTML = lines.join('<br>');
+          }
+
           
           displayEvents(from, to);
         });
