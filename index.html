@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.154)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.155)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -424,13 +424,13 @@
       .sort((a,b) => b.s - a.s);
       
       // --- rysuj markery w tej kolejności ---
-      items = items.filter(({ev}) => ev.Coordinates && ev.Coordinates.trim());
+      items = items.filter(({ev}) => ev['Coordinates'] && ev['Coordinates'].trim());
       items.forEach(({ev, s, e}, i) => {
   // jeżeli brak Coordinates – pomiń
-  if (!ev.Coordinates) return;
+  if (!ev['Coordinates']) return;
 
   // parsuj "lat, lng" z pola Coordinates
-  const [lat, lng] = ev.Coordinates
+  const [lat, lng] = ev['Coordinates']
     .split(',')
     .map(str => parseFloat(str.trim()));
   const pos = { lat, lng };
