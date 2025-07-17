@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.155)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.156)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -355,12 +355,15 @@
                 break;
 
             case 'cyclic': {
-                const d = new Date(now);
-                d.setDate(d.getDate() - d.getDay() + 1);
-                from.setTime(d);
-                to = new Date(d);
-                to.setDate(to.getDate() + 6);
-                to.setHours(23, 59, 59, 999);
+                // od dziś 00:00
+                const start = new Date(now);
+                start.setHours(0, 0, 0, 0);
+                // do za 6 dni 23:59:59
+                const end = new Date(start);
+                end.setDate(end.getDate() + 6);
+                end.setHours(23, 59, 59, 999);
+                from = start;
+                to   = end;
                 break;
             }
               
