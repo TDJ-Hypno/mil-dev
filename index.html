@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.158)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.159)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -484,22 +484,29 @@
     .map(str => parseFloat(str.trim()));
   const pos = { lat, lng };
 
-  // — dalej TWÓJ kod tworzący marker dokładnie tak samo, tylko
-  //   zamiast geocoder używamy `pos`:
-  const diff = Math.floor((s - today)/(1000*60*60*24));
-  let col;
-  if (e < today) {
-    // wydarzenie zakończone
-    col = 'blue';
-  } else if (diff === 0) {
-    col = 'red';      // dziś
-  } else if (diff === 1) {
-    col = 'orange';   // jutro
-  } else if (diff === 2) {
-    col = 'yellow';   // pojutrze
-  } else {
-    col = 'green';    // wszystkie pozostałe przyszłe
-  }
+    // przygotuj daty
+    const now = new Date();
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const sDay = new Date(s); sDay.setHours(0,0,0,0);
+    const diff = Math.floor((sDay - today) / msPerDay);
+    
+    let col;
+    if (s <= now && e >= now) {
+      // 1) Event już trwa
+      col = 'red';
+    } else if (diff === 0) {
+      // 2) Event zaczyna się dzisiaj
+      col = 'red';
+    } else if (e < today) {
+      // 3) Zakończone
+      col = 'blue';
+    } else if (diff === 1) {
+      col = 'orange';   // jutro
+    } else if (diff === 2) {
+      col = 'yellow';   // pojutrze
+    } else {
+      col = 'green';    // pozostałe przyszłe
+    }
         
   const zIndexMap = { red:5, orange:4, yellow:3, green:2, blue:1 };
 
