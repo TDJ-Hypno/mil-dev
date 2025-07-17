@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.152)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.153)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -390,7 +390,7 @@
       function fmtDate(s){ const d=new Date(s); return d.toISOString().replace(/-|:|\.\d{3}/g,''); }
 
       // --- przygotuj listę wydarzeń z przeliczonymi datami ---
-      const items = eventsData.map(ev => {
+      let items = eventsData.map(ev => {
         // 1) parsujemy oryginalne daty
         let s = new Date(ev['Data od']),
             e = new Date(ev['Data do']);
