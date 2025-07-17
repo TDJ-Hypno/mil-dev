@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.153)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.152)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -210,7 +210,9 @@
   <div class="info-panel" id="qrPanel" style="bottom: 52px; left: 280px;">
     QR
   </div>
-      
+    
+</div>
+  
   <div class="legend">
     <div><img class="legend-icon" src="https://maps.google.com/mapfiles/ms/icons/red-dot.png"> Dzisiaj</div>
     <div><img class="legend-icon" src="https://maps.google.com/mapfiles/ms/icons/orange-dot.png"> Jutro</div>
@@ -384,7 +386,7 @@
     function displayEvents(startDate, endDate) {
       const now = new Date(), today = new Date(now); today.setHours(0,0,0,0);
       markers.forEach(m=>m.setMap(null)); markers=[];
-
+      
       function fmtDate(s){ const d=new Date(s); return d.toISOString().replace(/-|:|\.\d{3}/g,''); }
 
       // --- przygotuj listę wydarzeń z przeliczonymi datami ---
@@ -417,57 +419,85 @@
         return { ev, s, e };
       })
       // 3) filtruj wg przedziału
-      .filter(({ev}) => ev.Coordinates && ev.Coordinates.trim()) 
       .filter(({s,e}) => !(s > endDate || e < startDate))
       // 4) sortuj malejąco po s → najdalsze jako pierwsze
       .sort((a,b) => b.s - a.s);
       
       // --- rysuj markery w tej kolejności ---
+      items = items.filter(({ev}) => ev.Coordinates && ev.Coordinates.trim());
       items.forEach(({ev, s, e}, i) => {
-        // używamy bezpośrednio współrzędnych z arkusza
-          if (!ev.Coordinates) {
-            // brak współrzędnych – pomiń ten wpis
-            return;
-          }
-          const [lat, lng] = ev.Coordinates
-            .split(',')
-            .map(s => parseFloat(s.trim()));
-          const pos = { lat, lng };
-          
-          // ––– poniżej wklej CAŁY swój dotychczasowy kod tworzący marker, tooltip i InfoWindow –––
-          const diff = Math.floor((s - today) / (1000*60*60*24));
-          let col = diff === 0 ? 'red'
-                : diff === 1 ? 'orange'
-                : diff === 2 ? 'yellow'
-                : diff <= 7 ? 'green'
-                : 'blue';
-          const zIndexMap = { red:5, orange:4, yellow:3, green:2, blue:1 };
-          
-          let tipTitle = `${ev.Nazwa}`;
-          if (ev['Dzien_tygodnia']) {
-            tipTitle += `\nMilonga cykliczna: ${ev['Dzien_tygodnia']}`;
-            tipTitle += `\nUpewnij się czy będzie!!!`;
-          }
-          tipTitle += `\n${s.toLocaleString()} – ${e.toLocaleString()}`;
-          
-          const marker = new google.maps.Marker({
-            map,
-            position: pos,
-            optimized: false,
-            zIndex:      zIndexMap[col],
-            icon:        { url: `https://maps.google.com/mapfiles/ms/icons/${col}-dot.png` },
-            title:       tipTitle
-          });
-          markers.push(marker);
-          
-          const content = /* … tutaj cały Twój HTML dla InfoWindow z ev.Adres … */;
-          const iw = new google.maps.InfoWindow({ content });
-          marker.customInfo = content;
-          oms.addMarker(marker);
+  // jeżeli brak Coordinates – pomiń
+  if (!ev.Coordinates) return;
 
-        
-      });
-      
+  // parsuj "lat, lng" z pola Coordinates
+  const [lat, lng] = ev.Coordinates
+    .split(',')
+    .map(str => parseFloat(str.trim()));
+  const pos = { lat, lng };
+
+  // — dalej TWÓJ kod tworzący marker dokładnie tak samo, tylko
+  //   zamiast geocoder używamy `pos`:
+  const diff = Math.floor((s - today) / (1000*60*60*24));
+  let col = diff === 0 ? 'red'
+        : diff === 1 ? 'orange'
+        : diff === 2 ? 'yellow'
+        : diff <= 7 ? 'green'
+        : 'blue';
+  const zIndexMap = { red:5, orange:4, yellow:3, green:2, blue:1 };
+
+  let tipTitle = `${ev.Nazwa}`;
+  if (ev['Dzien_tygodnia']) {
+    tipTitle += `\nMilonga cykliczna: ${ev['Dzien_tygodnia']}`;
+    tipTitle += `\nUpewnij się czy będzie!!!`;
+  }
+  tipTitle += `\n${s.toLocaleString()} – ${e.toLocaleString()}`;
+
+  const marker = new google.maps.Marker({
+    map,
+    position: pos,
+    optimized: false,
+    zIndex:      zIndexMap[col],
+    icon:        { url: `https://maps.google.com/mapfiles/ms/icons/${col}-dot.png` },
+    title:       tipTitle
+  });
+  markers.push(marker);
+
+  // (kopiuj dalej swój kod budujący InfoWindow z cleaned i oms.addMarker)
+  const cs = s > now
+    ? `<p><a href="https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.Nazwa)}&dates=${fmtDate(ev['Data od'])}/${fmtDate(ev['Data do'])}&details=${encodeURIComponent(ev.Informacje + '\n' + ev.Link)}&location=${encodeURIComponent(ev.Adres)}" target="_blank"><button>Dodaj do kalendarza</button></a></p>`
+    : '';
+
+  let cycDetails = '';
+  if (ev['Dzien_tygodnia']) {
+    cycDetails = `
+      <p><strong>Milonga cykliczna:</strong> ${ev['Dzien_tygodnia']}</p>
+      <p class="pulse">Sprawdź u organizatora czy na pewno będzie!!!</p>
+    `;
+  }
+
+  const content = `
+    <div style="font-family:'Arial Black', sans-serif;">
+      <h3>${ev.Nazwa}</h3>
+      <p><strong>Adres:</strong> ${ev.Adres}</p>
+      <p><strong>Od: </strong>${s.toLocaleString()}</p>
+      <p><strong>Do: </strong>${e.toLocaleString()}</p>
+      ${cycDetails}
+      <p><strong>Parkietowe: </strong>${ev.Parkietowe}</p>
+      <p><strong>Organizator: </strong>${ev.Organizator}</p>
+      <p><strong>TDJ: </strong>${ev.TDJ}</p>
+      <p><strong>Typ muzyki: </strong>${ev['Typ muzyki']}</p>
+      <p><strong>Info: </strong>${ev.Informacje}</p>
+      <p><a href="${ev.Link}" target="_blank">Link</a></p>
+      <p><a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(ev.Adres)}" target="_blank"><button>Trasa</button></a></p>
+      ${cs}
+    </div>
+  `;
+  const cleaned = content.replace(/undefined/g, 'b.d.');
+  const iw = new google.maps.InfoWindow({ content: cleaned });
+  marker.customInfo = cleaned;
+  oms.addMarker(marker);
+});
+
 
       
     }
