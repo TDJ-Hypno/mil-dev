@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.157)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.158)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -414,6 +414,7 @@
             case 'ended': from=new Date(2000,1,1);
                 to=new Date(now);
                 to.setHours(23,59,59,999);
+                eventsData = eventsData.filter(ev => new Date(ev['Data do']) < now);
             break;
             
             case 'range': from=new Date(document.getElementById('dateFrom').value);
