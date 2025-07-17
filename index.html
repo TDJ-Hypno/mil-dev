@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.153)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.154)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -437,12 +437,21 @@
 
   // — dalej TWÓJ kod tworzący marker dokładnie tak samo, tylko
   //   zamiast geocoder używamy `pos`:
-  const diff = Math.floor((s - today) / (1000*60*60*24));
-  let col = diff === 0 ? 'red'
-        : diff === 1 ? 'orange'
-        : diff === 2 ? 'yellow'
-        : diff <= 7 ? 'green'
-        : 'blue';
+  const diff = Math.floor((s - today)/(1000*60*60*24));
+  let col;
+  if (e < today) {
+    // wydarzenie zakończone
+    col = 'blue';
+  } else if (diff === 0) {
+    col = 'red';      // dziś
+  } else if (diff === 1) {
+    col = 'orange';   // jutro
+  } else if (diff === 2) {
+    col = 'yellow';   // pojutrze
+  } else {
+    col = 'green';    // wszystkie pozostałe przyszłe
+  }
+        
   const zIndexMap = { red:5, orange:4, yellow:3, green:2, blue:1 };
 
   let tipTitle = `${ev.Nazwa}`;
