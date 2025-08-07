@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.159)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.161)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -555,6 +555,26 @@
       <p><a href="${ev.Link}" target="_blank">Link</a></p>
       <p><a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(ev.Adres)}" target="_blank"><button>Trasa</button></a></p>
       ${cs}
+
+      <div style="
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: bold;
+        font-family: 'Arial Black', sans-serif;
+        font-size: 10px; ">
+        <span>Wydarzenia pod tym adresem:</span>
+        <input type="text" id="eventCounter" 
+               value="1" 
+               readonly 
+               style="width: 30px; text-align: center; background-color: white; border: 1px solid #888; border-radius: 4px; font-weight: bold;">
+        <button id="firstEventBtn" style="padding: 2px 6px;">&laquo;</button>
+        <button id="prevEventBtn"  style="padding: 2px 6px;">&lsaquo;</button>
+        <button id="nextEventBtn"  style="padding: 2px 6px;">&rsaquo;</button>
+        <button id="lastEventBtn"  style="padding: 2px 6px;">&raquo;</button>
+      </div>
+      
     </div>
   `;
   const cleaned = content.replace(/undefined/g, 'b.d.');
@@ -669,20 +689,31 @@
   </script>
 
   <script>
-    // 1) Rejestruj SW
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () =>
-        navigator.serviceWorker.register('sw.js').catch(console.error)
-      );
+  // 1) Rejestruj SW
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () =>
+      navigator.serviceWorker.register('sw.js').catch(console.error)
+    );
+  }
+
+  // 2) Przechwyć prompt i – gdy parametr settings=1 – wywołaj go od razu
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('settings') === '1') {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(choice => {
+        console.log('Install choice:', choice.outcome);
+        deferredPrompt = null;
+      });
     }
-    // 2) Przechwyć prompt
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', e => {
-      e.preventDefault();
-      deferredPrompt = e;
-    });
-    // 3) Hook przycisk
-    document.getElementById('addShortcutBtn')
+  });
+
+  // 3) Hook przycisk – nadal działa ręczne wywołanie
+  document.getElementById('addShortcutBtn')
     .addEventListener('click', async () => {
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
@@ -690,7 +721,8 @@
       console.log('Install choice:', outcome);
       deferredPrompt = null;
     });
-  </script>
+</script>
+
 
   <script>
     // 1) Po kliknięciu “QR” pokaż modal
