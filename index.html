@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.163)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.164)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -293,6 +293,7 @@
 
   <script>
     let map, oms, markers = [], eventsData = [], nightMode = false;
+    let markers = [];
 
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), { zoom: 10, center: { lat: 52.1, lng: 19.4 } });
@@ -433,6 +434,11 @@
     }
 
     function displayEvents(startDate, endDate) {
+
+      // usuń stare markery
+      markers.forEach(m => m.setMap(null));
+      markers = [];
+      
       const now = new Date(), today = new Date(now); today.setHours(0,0,0,0);
       markers.forEach(m=>m.setMap(null)); markers=[];
       
@@ -604,7 +610,7 @@
         marker.customInfo = cleaned;
         oms.addMarker(marker);
 
-
+        markers.push(marker);
         
       }
     }
