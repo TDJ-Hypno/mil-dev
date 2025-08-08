@@ -572,7 +572,7 @@ if (weekdayMap.hasOwnProperty(dn)) {
         if (group.length === 1) {
           tooltipTitle = `${ev.Nazwa}\n${formatTooltipDate(s, e)}`;
         } else {
-          tooltipTitle = `${ev.Nazwa} (pierwsze z ${group.length} wydarzeń)`;
+          tooltipTitle = `${ev.Nazwa} (pierwsze z ${group.length} wydarzeń)\n${formatTooltipDate(s, e)}`;
         }
         
         const marker = new google.maps.Marker({
