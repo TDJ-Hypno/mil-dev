@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.165)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.166)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -450,26 +450,55 @@
             e = new Date(ev['Data do']);
         // 2) recalc dla Dzien_tygodnia
         const weekdayMap = {
-          niedziela:0, poniedziałek:1, wtorek:2,
-          środa:3, czwartek:4, piątek:5, sobota:6
-        };
-        let dn = (ev['Dzien_tygodnia']||'').toLowerCase().trim();
-        if (weekdayMap.hasOwnProperty(dn)) {
-          const base = new Date(startDate);
-          base.setHours(0,0,0,0);
-          const offset = (weekdayMap[dn] - base.getDay() + 7) % 7;
-          const origS = new Date(s), origE = new Date(e);
-          const newS = new Date(base);
-          newS.setDate(base.getDate() + offset);
-          newS.setHours(origS.getHours(), origS.getMinutes(), origS.getSeconds(), origS.getMilliseconds());
-          const sd = new Date(origS); sd.setHours(0,0,0,0);
-          const ed = new Date(origE); ed.setHours(0,0,0,0);
-          const dayDiff = Math.round((ed - sd)/(1000*60*60*24));
-          const newE = new Date(newS);
-          newE.setDate(newS.getDate() + dayDiff);
-          newE.setHours(origE.getHours(), origE.getMinutes(), origE.getSeconds(), origE.getMilliseconds());
-          s = newS; e = newE;
-        }
+  niedziela:0, poniedziałek:1, wtorek:2,
+  środa:3, czwartek:4, piątek:5, sobota:6
+}.filter(Boolean); 
+let dn = (ev['Dzien_tygodnia']||'').toLowerCase().trim();
+if (weekdayMap.hasOwnProperty(dn)) {
+  const base = new Date(startDate);
+  base.setHours(0,0,0,0);
+  const origS = new Date(s), origE = new Date(e);
+
+  // parsujemy wykluczenia
+  let excluded = [];
+  if (ev['Wyklucz']) {
+    const parts = ev['Wyklucz'].split(', ');
+    for (const p of parts) {
+      if (p.includes('|')) {
+        const [ds, de] = p.split('|').map(d => new Date(d));
+        if (!isNaN(ds) && !isNaN(de)) excluded.push({ from: ds, to: de });
+      } else {
+        const d = new Date(p);
+        if (!isNaN(d)) excluded.push({ from: d, to: d });
+      }
+    }
+  }
+
+  // szukamy pierwszej dozwolonej daty zgodnej z dniem tygodnia
+  let found = false;
+  let testDate = new Date(base);
+  testDate.setHours(0,0,0,0);
+  while (testDate <= endDate) {
+    if (testDate.getDay() === weekdayMap[dn]) {
+      const isExcluded = excluded.some(({from, to}) => testDate >= from && testDate <= to);
+      if (!isExcluded) {
+        // to jest dozwolona data
+        const newS = new Date(testDate);
+        newS.setHours(origS.getHours(), origS.getMinutes(), origS.getSeconds(), origS.getMilliseconds());
+        const dayDiff = Math.round((origE - origS)/(1000*60*60*24));
+        const newE = new Date(newS);
+        newE.setDate(newS.getDate() + dayDiff);
+        newE.setHours(origE.getHours(), origE.getMinutes(), origE.getSeconds(), origE.getMilliseconds());
+        s = newS; e = newE;
+        found = true;
+        break;
+      }
+    }
+    testDate.setDate(testDate.getDate() + 1);
+  }
+
+  if (!found) return null; // nie znaleziono dozwolonej daty – pomiń wydarzenie
+}
         return { ev, s, e };
       })
       // 3) filtruj wg przedziału
