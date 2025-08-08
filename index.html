@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.168)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.169)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -574,6 +574,11 @@ if (weekdayMap.hasOwnProperty(dn)) {
         } else {
           tooltipTitle = `${ev.Nazwa} (pierwsze z ${group.length} wydarzeń)\n${formatTooltipDate(s, e)}`;
         }
+
+        // ewentualna linia z ostrzeżeniem dla cyklicznych
+        const dn = (ev['Dzien_tygodnia'] || '').trim();
+        if (dn && (group.length === 1 || group[0] === ev)) {
+          tooltipTitle += `Wydarzenie cykliczne, upewnij się, że będzie!`
         
         const marker = new google.maps.Marker({
           map,
