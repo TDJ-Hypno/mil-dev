@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.173)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.174)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -580,6 +580,10 @@ if (weekdayMap.hasOwnProperty(dn)) {
         if (dn && (group.length === 1 || group[0] === ev)) {
           tooltipTitle += `\nWydarzenie cykliczne, upewnij się, że będzie!`;
         }
+
+        // marker — to Twój obiekt Google Maps
+        marker.eventGroup   = group;      // cała tablica wydarzeń pod tym adresem
+        marker.currentIndex = 0;          // zaczynamy od pierwszego
         
         const marker = new google.maps.Marker({
           map,
@@ -657,7 +661,33 @@ if (weekdayMap.hasOwnProperty(dn)) {
         `;
         
         const cleaned = content.replace(/undefined/g, 'b.d.');
-        const iw = new google.maps.InfoWindow({ content: cleaned });
+
+        const infoWindow = new google.maps.InfoWindow({
+          content: makeIWContent(marker)
+        });
+        
+        marker.addListener('click', () => {
+          // pokaż okienko z aktualną zawartością
+          infoWindow.setContent(makeIWContent(marker));
+          infoWindow.open(map, marker);
+        
+          // gdy DOM okienka już załadowany, podłącz przyciski
+          google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
+            document.getElementById('prevBtn').addEventListener('click', () => {
+              if (marker.currentIndex > 0) {
+                marker.currentIndex--;
+                infoWindow.setContent(makeIWContent(marker));
+              }
+            });
+            document.getElementById('nextBtn').addEventListener('click', () => {
+              if (marker.currentIndex < marker.eventGroup.length - 1) {
+                marker.currentIndex++;
+                infoWindow.setContent(makeIWContent(marker));
+              }
+            });
+          });
+        });
+
 
         google.maps.event.addListener(iw, 'domready', () => {
           const btnNext = document.getElementById('nextEventBtn');
@@ -688,6 +718,58 @@ if (weekdayMap.hasOwnProperty(dn)) {
       document.addEventListener('click', e=>{if(!panel.contains(e.target)&&!tip.contains(e.target))tip.style.display='none';});
     });
 
+    function makeIWContent(marker) {
+      const { ev, s, e } = marker.eventGroup[marker.currentIndex];
+      const total   = marker.eventGroup.length;
+      const current = marker.currentIndex + 1;
+    
+      // detale cyklicznego (jeśli jest)
+      const cyc = ev.Dzien_tygodnia
+        ? `<p><strong>Milonga cykliczna:</strong> ${ev.Dzien_tygodnia}</p>
+           <p class="pulse">Sprawdź u organizatora czy na pewno będzie!!!</p>`
+        : '';
+    
+      // przycisk „Dodaj do kalendarza”
+      const cs = s > new Date()
+        ? `<p>
+             <a href="https://www.google.com/calendar/render?action=TEMPLATE
+               &text=${encodeURIComponent(ev.Nazwa)}
+               &dates=${fmtDate(ev['Data od'])}/${fmtDate(ev['Data do'])}
+               &details=${encodeURIComponent(ev.Informacje + '\n' + ev.Link)}
+               &location=${encodeURIComponent(ev.Adres)}" target="_blank">
+               <button>Dodaj do kalendarza</button>
+             </a>
+           </p>`
+        : '';
+    
+      return `
+        <div style="font-family:'Arial Black',sans-serif;">
+          <h3>${ev.Nazwa}</h3>
+          <p><strong>Adres:</strong> ${ev.Adres}</p>
+          <p><strong>Od:</strong> ${s.toLocaleString()}</p>
+          <p><strong>Do:</strong> ${e.toLocaleString()}</p>
+          ${cyc}
+          <p><strong>Parkietowe:</strong> ${ev.Parkietowe}</p>
+          <p><strong>Organizator:</strong> ${ev.Organizator}</p>
+          <p><strong>TDJ:</strong> ${ev.TDJ}</p>
+          <p><strong>Typ muzyki:</strong> ${ev['Typ muzyki']}</p>
+          <p><strong>Info:</strong> ${ev.Informacje}</p>
+          <p><a href="${ev.Link}" target="_blank">Link</a></p>
+          <p>
+            <a href="https://www.google.com/maps/dir/?api=1
+               &destination=${encodeURIComponent(ev.Adres)}" target="_blank">
+               <button>Trasa</button>
+            </a>
+          </p>
+          ${cs}
+          <div style="margin-top:10px; display:flex; align-items:center; gap:6px; font-size:10px;">
+            <button id="prevBtn">◀ Poprzednie</button>
+            <span>${current} z ${total}</span>
+            <button id="nextBtn">Następne ▶</button>
+          </div>
+        </div>`;
+    }
+    
     window.initMap = initMap;
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js"></script>
