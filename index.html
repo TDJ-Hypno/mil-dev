@@ -578,7 +578,8 @@ if (weekdayMap.hasOwnProperty(dn)) {
         // ewentualna linia z ostrzeżeniem dla cyklicznych
         const dn = (ev['Dzien_tygodnia'] || '').trim();
         if (dn && (group.length === 1 || group[0] === ev)) {
-          tooltipTitle += `Wydarzenie cykliczne, upewnij się, że będzie!`
+          tooltipTitle += `Wydarzenie cykliczne, upewnij się, że będzie!`;
+        }
         
         const marker = new google.maps.Marker({
           map,
