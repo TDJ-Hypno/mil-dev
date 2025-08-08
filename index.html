@@ -677,7 +677,7 @@ if (weekdayMap.hasOwnProperty(dn)) {
       document.addEventListener('click', e=>{if(!panel.contains(e.target)&&!tip.contains(e.target))tip.style.display='none';});
     });
 
-    document.getElementById("eventNextBtn").addEventListener("click", () => {
+    document.getElementById("nextEventBtn").addEventListener("click", () => {
       if (!group || group.length < 2) return;
     
       const currentIndex = group.findIndex(ev => ev.ID === eventCurrent);
