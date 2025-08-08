@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.170)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.171)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -677,17 +677,28 @@ if (weekdayMap.hasOwnProperty(dn)) {
       document.addEventListener('click', e=>{if(!panel.contains(e.target)&&!tip.contains(e.target))tip.style.display='none';});
     });
 
-    document.getElementById("nextEventBtn").addEventListener("click", () => {
-      if (!group || group.length < 2) return;
+    document.addEventListener("click", e => {
+      if (e.target && e.target.id === "nextEventBtn") {
+        const group = window.currentEventGroup;
+        let eventCurrent = parseInt(document.getElementById("eventCurrent").value, 10);
     
-      const currentIndex = group.findIndex(ev => ev.ID === eventCurrent);
-      if (currentIndex === -1 || currentIndex >= group.length - 1) return;
+        if (!group || group.length < 2 || isNaN(eventCurrent)) return;
+        if (eventCurrent >= group.length) return;
     
-      const nextEvent = group[currentIndex + 1];
-      eventCurrent = nextEvent.ID;
-      showEventDetails(nextEvent, group);
+        const nextEvent = group[eventCurrent]; // indeks w tablicy (0-based)
+        document.getElementById("eventCurrent").value = (eventCurrent + 1).toString();
+        const ev = nextEvent.ev;
+        const s = nextEvent.s;
+        const e = nextEvent.e;
+    
+        // Twórz nową zawartość InfoWindow tak samo jak wcześniej:
+        const iwContent = generateInfoWindowContent(ev, s, e, group.length, eventCurrent + 1, group);
+        
+        const infoWindow = new google.maps.InfoWindow({ content: iwContent });
+        const marker = markers.find(m => m.getPosition().lat() === ev.Coordinates.split(',')[0]*1);
+        if (marker) infoWindow.open(map, marker);
+      }
     });
-
 
     window.initMap = initMap;
   </script>
