@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.169)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.170)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -676,6 +676,18 @@ if (weekdayMap.hasOwnProperty(dn)) {
       no.addEventListener('click', e=>{e.stopPropagation();tip.style.display='none';});
       document.addEventListener('click', e=>{if(!panel.contains(e.target)&&!tip.contains(e.target))tip.style.display='none';});
     });
+
+    document.getElementById("eventNextBtn").addEventListener("click", () => {
+      if (!group || group.length < 2) return;
+    
+      const currentIndex = group.findIndex(ev => ev.ID === eventCurrent);
+      if (currentIndex === -1 || currentIndex >= group.length - 1) return;
+    
+      const nextEvent = group[currentIndex + 1];
+      eventCurrent = nextEvent.ID;
+      showEventDetails(nextEvent, group);
+    });
+
 
     window.initMap = initMap;
   </script>
