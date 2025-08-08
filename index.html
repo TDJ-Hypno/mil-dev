@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.166)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.167)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -452,7 +452,7 @@
         const weekdayMap = {
   niedziela:0, poniedziałek:1, wtorek:2,
   środa:3, czwartek:4, piątek:5, sobota:6
-}.filter(Boolean); 
+}; 
 let dn = (ev['Dzien_tygodnia']||'').toLowerCase().trim();
 if (weekdayMap.hasOwnProperty(dn)) {
   const base = new Date(startDate);
