@@ -191,7 +191,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.171)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.173)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -658,6 +658,17 @@ if (weekdayMap.hasOwnProperty(dn)) {
         
         const cleaned = content.replace(/undefined/g, 'b.d.');
         const iw = new google.maps.InfoWindow({ content: cleaned });
+
+        google.maps.event.addListener(iw, 'domready', () => {
+          const btnNext = document.getElementById('nextEventBtn');
+          if (btnNext) {
+            btnNext.addEventListener('click', (e) => {
+              e.preventDefault();
+              alert('Kliknięto Dalej – tutaj wstaw swoją logikę przechodzenia do następnego wydarzenia');
+            });
+          }
+        });
+        
         marker.customInfo = cleaned;
         oms.addMarker(marker);
 
@@ -675,29 +686,6 @@ if (weekdayMap.hasOwnProperty(dn)) {
       yes.addEventListener('click',e=>{e.stopPropagation();tip.style.display='none';window.open('https://m.me/tdj.hypno.piotr.smolen','_blank');});
       no.addEventListener('click', e=>{e.stopPropagation();tip.style.display='none';});
       document.addEventListener('click', e=>{if(!panel.contains(e.target)&&!tip.contains(e.target))tip.style.display='none';});
-    });
-
-    document.addEventListener("click", e => {
-      if (e.target && e.target.id === "nextEventBtn") {
-        const group = window.currentEventGroup;
-        let eventCurrent = parseInt(document.getElementById("eventCurrent").value, 10);
-    
-        if (!group || group.length < 2 || isNaN(eventCurrent)) return;
-        if (eventCurrent >= group.length) return;
-    
-        const nextEvent = group[eventCurrent]; // indeks w tablicy (0-based)
-        document.getElementById("eventCurrent").value = (eventCurrent + 1).toString();
-        const ev = nextEvent.ev;
-        const s = nextEvent.s;
-        const e = nextEvent.e;
-    
-        // Twórz nową zawartość InfoWindow tak samo jak wcześniej:
-        const iwContent = generateInfoWindowContent(ev, s, e, group.length, eventCurrent + 1, group);
-        
-        const infoWindow = new google.maps.InfoWindow({ content: iwContent });
-        const marker = markers.find(m => m.getPosition().lat() === ev.Coordinates.split(',')[0]*1);
-        if (marker) infoWindow.open(map, marker);
-      }
     });
 
     window.initMap = initMap;
