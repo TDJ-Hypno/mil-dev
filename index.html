@@ -231,7 +231,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.179)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.180)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -303,6 +303,15 @@
     <button onclick="applyFilter()">Filtruj</button>
   </div>
 
+  <!-- Modal komunikatu (np. Brak wyników) -->
+  <div id="msgModal" style="display:none;
+      position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
+      background: lightgray; padding: 16px 20px; border:1px solid #ccc;
+      border-radius:8px; z-index:2001; text-align:center; font-family:'Arial Black', sans-serif; font-size:12px;">
+    <div id="msgText" style="margin-bottom:12px;">Komunikat</div>
+    <button id="msgOk" class="custom-button" style="padding:2px 10px;">OK</button>
+  </div>
+  
   <!-- Modal Ustawień -->
   <div id="settingsModal" style="display:none;
       position:fixed;
@@ -438,6 +447,10 @@
             : 'wszystkie'));
           selectedFilterBase = sel.textContent; // zapamiętaj „bazę” dla dopisek „zawierające: …”
           document.getElementById('filterModal').style.display = 'none';
+
+          const sb = document.getElementById('searchBox');
+          if (sb) sb.value = '';   // wyczyść pole wyszukiwania po filtrowaniu
+
 
           const now = new Date();
           let from = new Date(now), to = new Date(now);
@@ -823,7 +836,8 @@ if (weekdayMap.hasOwnProperty(dn)) {
       
           // Brak wyników ⇒ komunikat i brak zmian na mapie/tekście
           if (!hits.length) {
-            window.showNavToast ? showNavToast('Brak wyników') : alert('Brak wyników');
+            /* window.showNavToast ? showNavToast('Brak wyników') : alert('Brak wyników'); */
+            showMessage('Brak wyników');
             return;
           }
       
@@ -851,6 +865,21 @@ if (weekdayMap.hasOwnProperty(dn)) {
       }
 
     });
+
+    function showMessage(msg) {
+      const m = document.getElementById('msgModal');
+      const t = document.getElementById('msgText');
+      if (!m || !t) return;
+      t.textContent = msg;
+      m.style.display = 'block';
+    }
+    function hideMessage() {
+      const m = document.getElementById('msgModal');
+      if (m) m.style.display = 'none';
+    }
+    document.getElementById('msgOk')?.addEventListener('click', hideMessage);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideMessage(); });
+
     
     // i dopiero potem przypięcie callbacka Google:
     window.initMap = initMap;
