@@ -210,7 +210,7 @@
   
   <div style="position: absolute; top: 60px; left: 10px; z-index: 10; display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
     
-    <button onclick="openFilterModal()" class="custom-button">Filtruj</button>
+    <button id="filterBtn" class="custom-button">Filtruj</button>
 
     <div style="display: flex; gap: 6px; align-items: center;">
       <input type="text" id="searchBox" placeholder="Wpisz szukany tekst"
@@ -223,7 +223,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.174)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.175)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -763,32 +763,32 @@ if (weekdayMap.hasOwnProperty(dn)) {
       }
     }
 
-    document.addEventListener('DOMContentLoaded',()=>{
-      const panel=document.querySelector('.info-panel');
-      const tip=document.getElementById('contactTooltip');
-      const yes=document.getElementById('contactYes');
-      const no=document.getElementById('contactNo');
+    document.addEventListener('DOMContentLoaded', () => {
+      const panel = document.querySelector('.info-panel');
+      const tip   = document.getElementById('contactTooltip');
+      const yes   = document.getElementById('contactYes');
+      const no    = document.getElementById('contactNo');
       panel.addEventListener('click',()=>tip.style.display=tip.style.display==='block'?'none':'block');
       yes.addEventListener('click',e=>{e.stopPropagation();tip.style.display='none';window.open('https://m.me/tdj.hypno.piotr.smolen','_blank');});
       no.addEventListener('click', e=>{e.stopPropagation();tip.style.display='none';});
       document.addEventListener('click', e=>{if(!panel.contains(e.target)&&!tip.contains(e.target))tip.style.display='none';});
+    
+      // ↓↓↓ DODANE: nasłuchy dla „Filtruj” i „Szukaj” (bez dodatkowych <script>)
+      const filterBtn = document.getElementById('filterBtn');
+      if (filterBtn) filterBtn.addEventListener('click', () => applyFilter());
+    
+      const searchBtn = document.getElementById('searchBtn');
+      if (searchBtn) {
+        searchBtn.addEventListener('click', () => {
+          const val = (document.getElementById('searchBox')?.value || '').trim();
+          alert('Wpisano: ' + val);
+        });
+      }
     });
-
-    <script>
-      // Obsługa „Filtruj” bez modala
-      document.getElementById('filterBtn').addEventListener('click', () => {
-        applyFilter();
-      });
     
-      // Prosty test działania „Szukaj”
-      document.getElementById('searchBtn').addEventListener('click', () => {
-        const val = document.getElementById('searchBox').value.trim();
-        alert('Wpisano: ' + val);
-      });
-    </script>
-
-    
+    // i dopiero potem przypięcie callbacka Google:
     window.initMap = initMap;
+    
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js"></script>
  
