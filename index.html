@@ -93,13 +93,6 @@
       font-size: 10px;
       z-index: 6;
     }
-
-    <!-- Prosty komunikat (toast) dla przycisków nawigacji -->
-    <div id="navToast">
-      <span id="navToastText"></span>
-      <button id="navToastClose">Zamknij</button>
-    </div>
-
     
     #contactTooltip button {
       margin-right: 6px;
@@ -223,7 +216,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.171)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.172)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -265,7 +258,13 @@
     <button id="contactYes">Tak</button>
     <button id="contactNo">Nie</button>
   </div>
-  
+
+  <!-- Prosty komunikat (toast) dla przycisków nawigacji -->
+  <div id="navToast" style="display:none; position:fixed; bottom:120px; left:50%; transform:translateX(-50%); background:lightgray; padding:8px 12px; border-radius:8px; border:1px solid #888; font-family:'Arial Black', sans-serif; font-size:10px; z-index:1001;">
+    <span id="navToastText"></span>
+    <button id="navToastClose" style="margin-left:8px; padding:4px 8px; border:1px solid #888; border-radius:4px; background:white; cursor:pointer;">Zamknij</button>
+  </div>
+
 
   <!-- Modal filtrów -->
   <div id="filterModal" style="display:none; position:fixed; top:50px; left:50%; transform:translateX(-50%, -50%); background:lightgray; padding:20px; border:1px solid #ccc; z-index:1000; border-radius:8px;">
@@ -888,13 +887,13 @@ if (weekdayMap.hasOwnProperty(dn)) {
   </script>
 
   <script>
-    // Prosta obsługa komunikatu (toast)
-    (function () {
+    // Prosta obsługa komunikatu (toast) – bezpieczna inicjalizacja po DOMContentLoaded
+    window.addEventListener('DOMContentLoaded', () => {
       const box   = document.getElementById('navToast');
       const text  = document.getElementById('navToastText');
       const close = document.getElementById('navToastClose');
+      if (!box || !text || !close) return; // brak elementów – nic nie rób
   
-      // Użyj: showNavToast("treść")
       window.showNavToast = function (msg) {
         text.textContent = msg;
         box.style.display = 'block';
@@ -904,9 +903,8 @@ if (weekdayMap.hasOwnProperty(dn)) {
         e.stopPropagation();
         box.style.display = 'none';
       });
-    })();
+    });
   </script>
-
   
 </body>
   
