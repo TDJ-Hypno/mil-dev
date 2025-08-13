@@ -216,7 +216,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.172)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.173)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -322,7 +322,7 @@
   </div>
 
   <script>
-    let map, oms, markers = [], eventsData = [], nightMode = false;
+    let map, oms, markers = [], eventsData = [], nightMode = false, currentMarker = null;
 
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), { zoom: 10, center: { lat: 52.1, lng: 19.4 } });
@@ -333,30 +333,54 @@
       });
       const spiderInfo = new google.maps.InfoWindow();
       oms.addListener('click', function(marker) {
-        spiderInfo.setContent(marker.customInfo);
+        currentMarker = marker; // zapamiętaj, który marker ma otwarte InfoWindow
+        const html = (marker.infoPages && marker.infoPages.length)
+                     ? marker.infoPages[marker.customIndex || 0]
+                     : marker.customInfo; // fallback na dawny content
+        spiderInfo.setContent(html);
         spiderInfo.open(map, marker);
       });
 
-      // Po wyrenderowaniu treści InfoWindow podłącz obsługę 4 przycisków
+      // Po wyrenderowaniu treści InfoWindow – podłącz nawigację
       google.maps.event.addListener(spiderInfo, 'domready', function () {
-        const bind = (id, msg) => {
-          const el = document.getElementById(id);
-          if (!el) return;
-          el.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // jeśli dodałeś showNavToast z kroków 1–3, użyj go; w przeciwnym razie fallback do alert
-            if (window.showNavToast) window.showNavToast(msg);
-            else alert(msg);
-          });
+        if (!currentMarker || !currentMarker.infoPages) return;
+      
+        const len = currentMarker.infoPages.length;
+      
+        const byId = id => document.getElementById(id);
+        const setPage = (idx) => {
+          if (idx < 0 || idx >= len) return;
+          currentMarker.customIndex = idx;
+          spiderInfo.setContent(currentMarker.infoPages[idx]); // podmień całą treść
         };
       
-        bind('firstEventBtn', 'Naciśnięto pierwszy');
-        bind('prevEventBtn',  'Naciśnięto poprzedni');
-        bind('nextEventBtn',  'Naciśnięto następny');
-        bind('lastEventBtn',  'Naciśnięto ostatni');
+        const firstBtn = byId('firstEventBtn');
+        const prevBtn  = byId('prevEventBtn');
+        const nextBtn  = byId('nextEventBtn');
+        const lastBtn  = byId('lastEventBtn');
+      
+        if (firstBtn) firstBtn.addEventListener('click', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          if (currentMarker.customIndex !== 0) setPage(0);
+        });
+      
+        if (prevBtn) prevBtn.addEventListener('click', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          const i = currentMarker.customIndex;
+          if (i > 0) setPage(i - 1);
+        });
+      
+        if (nextBtn) nextBtn.addEventListener('click', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          const i = currentMarker.customIndex;
+          if (i < len - 1) setPage(i + 1);
+        });
+      
+        if (lastBtn) lastBtn.addEventListener('click', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          if (currentMarker.customIndex !== len - 1) setPage(len - 1);
+        });
       });
-
       
       loadData();
     }
@@ -581,24 +605,25 @@ if (weekdayMap.hasOwnProperty(dn)) {
       for (const coord in groupedByCoords) {
         const group = groupedByCoords[coord];
         const first = group[0];        // najbliższe wydarzenie
-        const ev = first.ev;
-        const s = first.s;
-        const e = first.e;
-
+        // pomocnicze (kolor znacznika wg najbliższego wydarzenia)
+        const ev0 = first.ev;
+        const s0  = first.s;
+        const e0  = first.e;
+        
         const [lat, lng] = coord.split(',').map(str => parseFloat(str.trim()));
         const pos = { lat, lng };
-
-        const now = new Date();
-        const today = new Date(now); today.setHours(0,0,0,0);
-        const sDay = new Date(s); sDay.setHours(0,0,0,0);
-        const diff = Math.floor((sDay - today) / (1000 * 60 * 60 * 24));
+        
+        const now2 = new Date();
+        const today2 = new Date(now2); today2.setHours(0,0,0,0);
+        const sDay = new Date(s0); sDay.setHours(0,0,0,0);
+        const diff = Math.floor((sDay - today2) / (1000 * 60 * 60 * 24));
         
         let col;
-        if (s <= now && e >= now) {
+        if (s0 <= now2 && e0 >= now2) {
           col = 'red';
         } else if (diff === 0) {
           col = 'red';
-        } else if (e < today) {
+        } else if (e0 < today2) {
           col = 'blue';
         } else if (diff === 1) {
           col = 'orange';
@@ -607,9 +632,10 @@ if (weekdayMap.hasOwnProperty(dn)) {
         } else {
           col = 'green';
         }
-
+        
         const zIndexMap = { red:5, orange:4, yellow:3, green:2, blue:1 };
-
+        
+        // HTML tooltipa (podpowiedzi) — zostaje jak był
         const formatTooltipDate = (s, e) => {
           const pad = n => n.toString().padStart(2, '0');
           const fmt = d => `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
@@ -619,20 +645,96 @@ if (weekdayMap.hasOwnProperty(dn)) {
             return `${fmt(s)} - ${fmt(e)}`;
           }
         };
-        
         let tooltipTitle;
         if (group.length === 1) {
-          tooltipTitle = `${ev.Nazwa}\n${formatTooltipDate(s, e)}`;
+          tooltipTitle = `${ev0.Nazwa}\n${formatTooltipDate(s0, e0)}`;
         } else {
-          tooltipTitle = `${ev.Nazwa} (pierwsze z ${group.length} wydarzeń)\n${formatTooltipDate(s, e)}`;
+          tooltipTitle = `${ev0.Nazwa} (pierwsze z ${group.length} wydarzeń)\n${formatTooltipDate(s0, e0)}`;
         }
-
-        // ewentualna linia z ostrzeżeniem dla cyklicznych
-        const dn = (ev['Dzien_tygodnia'] || '').trim();
-        if (dn && (group.length === 1 || group[0] === ev)) {
+        const dn0 = (ev0['Dzien_tygodnia'] || '').trim();
+        if (dn0 && (group.length === 1 || group[0] === ev0)) {
           tooltipTitle += `\nWydarzenie cykliczne, upewnij się, że będzie!`;
         }
         
+        // --- Funkcja renderująca JEDNĄ stronę okienka dla podanego elementu grupy ---
+        function renderContent(item, idx) {
+          const ev = item.ev;
+          const s  = item.s;
+          const e  = item.e;
+        
+          const cs = s > new Date()
+            ? `<p><a href="https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.Nazwa)}&dates=${fmtDate(ev['Data od'])}/${fmtDate(ev['Data do'])}&details=${encodeURIComponent(ev.Informacje + '\n' + ev.Link)}&location=${encodeURIComponent(ev.Adres)}" target="_blank"><button>Dodaj do kalendarza</button></a></p>`
+            : '';
+        
+          let cycDetails = '';
+          if (ev['Dzien_tygodnia']) {
+            cycDetails = `
+              <p><strong>Milonga cykliczna:</strong> ${ev['Dzien_tygodnia']}</p>
+              <p class="pulse">Sprawdź u organizatora czy na pewno będzie!!!</p>
+            `;
+          }
+        
+          const html = `
+            <div style="font-family:'Arial Black', sans-serif;">
+              <h3>${ev.Nazwa}</h3>
+              <p><strong>Adres:</strong> ${ev.Adres}</p>
+              <p><strong>Od: </strong>${s.toLocaleString()}</p>
+              <p><strong>Do: </strong>${e.toLocaleString()}</p>
+              ${cycDetails}
+              <p><strong>Parkietowe: </strong>${ev.Parkietowe}</p>
+              <p><strong>Organizator: </strong>${ev.Organizator}</p>
+              <p><strong>TDJ: </strong>${ev.TDJ}</p>
+              <p><strong>Typ muzyki: </strong>${ev['Typ muzyki']}</p>
+              <p><strong>Info: </strong>${ev.Informacje}</p>
+              <p><a href="${ev.Link}" target="_blank">Link</a></p>
+              <p><a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(ev.Adres)}" target="_blank"><button>Trasa</button></a></p>
+              ${cs}
+        
+              <div style="
+                margin-top: 10px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-weight: bold;
+                font-family: 'Arial Black', sans-serif;
+                font-size: 10px;">
+                
+                <span>Wydarzeń pod tym adresem:</span>
+                <input type="text" id="eventCounter"
+                       value="${group.length}"
+                       readonly
+                       style="width: 30px;
+                              text-align: left;
+                              background-color: white;
+                              border: none;
+                              font-weight: bold;">
+        
+                <button id="firstEventBtn" style="padding: 2px 6px;">&laquo;</button>
+                <button id="prevEventBtn"  style="padding: 2px 6px;">&lsaquo;</button>
+        
+                <input type="text" id="eventCurrent"
+                       value="${idx+1}"
+                       readonly
+                       style="width: 30px;
+                              text-align: center;
+                              background-color: white;
+                              border: 1px solid #888;
+                              border-radius: 4px;
+                              font-weight: bold;">
+                              
+                <button id="nextEventBtn"  style="padding: 2px 6px;">&rsaquo;</button>
+                <button id="lastEventBtn"  style="padding: 2px 6px;">&raquo;</button>
+              </div>
+            </div>
+          `;
+        
+          return html.replace(/undefined/g, 'b.d.');
+        }
+        
+        // --- Zbuduj wszystkie strony okienka dla tej grupy ---
+        const infoPages = group.map((item, idx) => renderContent(item, idx));
+        
+        // --- Utwórz marker i podłącz do OMS ---
         const marker = new google.maps.Marker({
           map,
           position: pos,
@@ -641,79 +743,15 @@ if (weekdayMap.hasOwnProperty(dn)) {
           icon:      { url: `https://maps.google.com/mapfiles/ms/icons/${col}-dot.png` },
           title:     tooltipTitle
         });
-
-        const cs = s > now
-          ? `<p><a href="https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.Nazwa)}&dates=${fmtDate(ev['Data od'])}/${fmtDate(ev['Data do'])}&details=${encodeURIComponent(ev.Informacje + '\n' + ev.Link)}&location=${encodeURIComponent(ev.Adres)}" target="_blank"><button>Dodaj do kalendarza</button></a></p>`
-          : '';
         
-        let cycDetails = '';
-        if (ev['Dzien_tygodnia']) {
-          cycDetails = `
-            <p><strong>Milonga cykliczna:</strong> ${ev['Dzien_tygodnia']}</p>
-            <p class="pulse">Sprawdź u organizatora czy na pewno będzie!!!</p>
-          `;
-        }
+        // stan nawigacji dla markera
+        marker.customIndex = 0;           // start od 1. wydarzenia (indeks 0)
+        marker.infoPages   = infoPages;   // wszystkie „ekrany” okienka
+        marker.customInfo  = infoPages[0];// zgodność wsteczna
         
-        const content = `
-          <div style="font-family:'Arial Black', sans-serif;">
-            <h3>${ev.Nazwa}</h3>
-            <p><strong>Adres:</strong> ${ev.Adres}</p>
-            <p><strong>Od: </strong>${s.toLocaleString()}</p>
-            <p><strong>Do: </strong>${e.toLocaleString()}</p>
-            ${cycDetails}
-            <p><strong>Parkietowe: </strong>${ev.Parkietowe}</p>
-            <p><strong>Organizator: </strong>${ev.Organizator}</p>
-            <p><strong>TDJ: </strong>${ev.TDJ}</p>
-            <p><strong>Typ muzyki: </strong>${ev['Typ muzyki']}</p>
-            <p><strong>Info: </strong>${ev.Informacje}</p>
-            <p><a href="${ev.Link}" target="_blank">Link</a></p>
-            <p><a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(ev.Adres)}" target="_blank"><button>Trasa</button></a></p>
-            ${cs}
-        
-            <div style="
-              margin-top: 10px;
-              display: flex;
-              align-items: center;
-              gap: 6px;
-              font-weight: bold;
-              font-family: 'Arial Black', sans-serif;
-              font-size: 10px;">
-              
-              <span>Wydarzeń pod tym adresem:</span>
-              <input type="text" id="eventCounter"
-                     value="${group.length}"
-                     readonly
-                     style="width: 30px;
-                            text-align: left;
-                            background-color: white;
-                            border: none;
-                            font-weight: bold;">
-        
-              <button id="firstEventBtn" style="padding: 2px 6px;">&laquo;</button>
-              <button id="prevEventBtn"  style="padding: 2px 6px;">&lsaquo;</button>
-        
-              <input type="text" id="eventCurrent"
-                     value="1"
-                     readonly
-                     style="width: 30px;
-                            text-align: center;
-                            background-color: white;
-                            border: 1px solid #888;
-                            border-radius: 4px;
-                            font-weight: bold;">
-                            
-              <button id="nextEventBtn"  style="padding: 2px 6px;">&rsaquo;</button>
-              <button id="lastEventBtn"  style="padding: 2px 6px;">&raquo;</button>
-            </div>
-          </div>
-        `;
-        
-        const cleaned = content.replace(/undefined/g, 'b.d.');
-        const iw = new google.maps.InfoWindow({ content: cleaned });
-        marker.customInfo = cleaned;
         oms.addMarker(marker);
-
         markers.push(marker);
+
         
       }
     }
