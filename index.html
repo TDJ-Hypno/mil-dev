@@ -231,7 +231,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.180)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.181)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -346,7 +346,7 @@
   </div>
 
   <script>
-    let map, oms, markers = [], eventsData = [], nightMode = false, currentMarker = null, infoWindow = null, selectedFilterBase = '';
+    let map, oms, markers = [], eventsData = [], nightMode = false, currentMarker = null, infoWindow = null, selectedFilterBase = '', initialCenter = null, initialZoom = null;
 
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), { zoom: 10, center: { lat: 52.1, lng: 19.4 } });
@@ -433,6 +433,19 @@
     function toggleDateInputs() { document.getElementById('dateInputs').style.display = document.getElementById('filterSelect').value === 'range' ? 'block' : 'none'; }
 
     function applyFilter() {
+
+        // ➊ Jednorazowo zapisz widok początkowy mapy (center + zoom)
+        if (!initialCenter && map) {
+          const c = map.getCenter();
+          initialCenter = { lat: c.lat(), lng: c.lng() };
+          initialZoom   = map.getZoom();
+        }
+      
+        // ➋ Czyść pole wyszukiwania przy każdym zatwierdzeniu filtra
+        const box = document.getElementById('searchBox');
+        if (box) box.value = '';
+
+      
       fetch('https://opensheet.elk.sh/1_6bzYSjQZac-QkAytaJD0D81YXcFSOe72Su024smcl0/Arkusz1')
         .then(res => res.json())
         .then(data => {
@@ -537,6 +550,13 @@
           }
                     
           displayEvents(from, to);
+
+            // ➌ Po zastosowaniu filtra przywróć widok mapy z pierwszego uruchomienia
+            if (initialCenter && typeof initialZoom === 'number') {
+              map.setCenter(initialCenter);
+              map.setZoom(initialZoom);
+            }
+
         });
     }
 
