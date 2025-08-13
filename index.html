@@ -231,7 +231,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.177)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.178)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -337,7 +337,7 @@
   </div>
 
   <script>
-    let map, oms, markers = [], eventsData = [], nightMode = false, currentMarker = null;
+    let map, oms, markers = [], eventsData = [], nightMode = false, currentMarker = null, infoWindow = null, selectedFilterBase = '';
 
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), { zoom: 10, center: { lat: 52.1, lng: 19.4 } });
@@ -432,7 +432,11 @@
 
           const f = document.getElementById('filterSelect').value;
           const labels = { all:'bieżące i przyszłe', cyclic: 'cykliczne', today:'dzisiaj', next3days:'najbliższe 3 dni', week:'ten tydzień', weekend:'ten weekend', nextweek:'następny tydzień', nextweekend:'następny weekend', ended:'zakończone' };
-          document.getElementById('selectedFilter').textContent = 'Wybrano: ' + (labels[f] || (f==='range'?`zakres od ${document.getElementById('dateFrom').value} do ${document.getElementById('dateTo').value}`:'wszystkie'));
+          const sel = document.getElementById('selectedFilter');
+          sel.textContent = 'Wybrano: ' + (labels[f] || (f === 'range'
+            ? `zakres od ${document.getElementById('dateFrom').value} do ${document.getElementById('dateTo').value}`
+            : 'wszystkie'));
+          selectedFilterBase = sel.textContent; // zapamiętaj „bazę” dla dopisek „zawierające: …”
           document.getElementById('filterModal').style.display = 'none';
 
           const now = new Date();
@@ -787,11 +791,55 @@ if (weekdayMap.hasOwnProperty(dn)) {
     
       const searchBtn = document.getElementById('searchBtn');
       if (searchBtn) {
-        searchBtn.addEventListener('click', () => {
-          const val = (document.getElementById('searchBox')?.value || '').trim();
-          alert('Wpisano: ' + val);
+        const runSearch = () => {
+          const box  = document.getElementById('searchBox');
+          const qRaw = (box?.value || '').trim();
+          const q    = qRaw.toLowerCase();
+      
+          // 2) Pusty wzorzec ⇒ po prostu zastosuj bieżące filtrowanie (reset widoku)
+          if (qRaw.length === 0) {
+            applyFilter();
+            return;
+          }
+      
+          // Zbyt krótki wzorzec ⇒ komunikat, bez zmian UI
+          if (q.length < 3) {
+            window.showNavToast ? showNavToast('Wpisz min. 3 znaki') : alert('Wpisz min. 3 znaki');
+            return;
+          }
+      
+          // Szukamy po pre-zbudowanym tekście markera (Nazwa + Adres dla całej grupy)
+          const hits = markers.filter(m => (m.searchText || '').includes(q));
+      
+          // Brak wyników ⇒ komunikat i brak zmian na mapie/tekście
+          if (!hits.length) {
+            window.showNavToast ? showNavToast('Brak wyników') : alert('Brak wyników');
+            return;
+          }
+      
+          // 1) Pokaż TYLKO trafienia
+          markers.forEach(m => m.setMap(null));
+          hits.forEach(m => m.setMap(map));
+      
+          // 2) Dopasuj widok
+          const bounds = new google.maps.LatLngBounds();
+          hits.forEach(m => bounds.extend(m.getPosition()));
+          map.fitBounds(bounds);
+      
+          // 3) Dopisz do „Wybrano: …” informację o wyszukiwaniu
+          const sel = document.getElementById('selectedFilter');
+          sel.textContent = `${selectedFilterBase}, zawierające: ${qRaw} (znaleziono ${hits.length})`;
+        };
+      
+        searchBtn.addEventListener('click', runSearch);
+      
+        // Enter w polu też uruchamia wyszukiwanie
+        const searchBox = document.getElementById('searchBox');
+        if (searchBox) searchBox.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') runSearch();
         });
       }
+
     });
     
     // i dopiero potem przypięcie callbacka Google:
