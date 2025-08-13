@@ -210,22 +210,23 @@
   
   <div style="position: absolute; top: 60px; left: 10px; z-index: 10; display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
     
-    <button id="filterBtn" class="custom-button">Filtruj</button>
-    <div id="selectedFilter">Wybrano: najbliższe 3 dni</div>
+    <!-- wiersz: Filtruj + Wybrano obok siebie -->
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button id="filterBtn" class="custom-button">Filtruj</button>
+      <div id="selectedFilter">Wybrano: najbliższe 3 dni</div>
+    </div>
     
+    <!-- poniżej zostaje wiersz: pole + Szukaj -->
     <div style="display: flex; gap: 6px; align-items: center;">
       <input type="text" id="searchBox" placeholder="Wpisz szukany tekst"
-            style="padding: 2px 6px;
-            /* font-size: 10px; */
-            border: 1px solid #888;
-            border-radius: 4px;">
+             style="padding: 2px 6px; border: 1px solid #888; border-radius: 4px;">
       <button id="searchBtn" class="custom-button" style="padding: 2px 8px;">Szukaj</button>
     </div>
 
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.175)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.176)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
