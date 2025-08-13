@@ -231,7 +231,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.178)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.179)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -767,6 +767,14 @@ if (weekdayMap.hasOwnProperty(dn)) {
         marker.customIndex = 0;           // start od 1. wydarzenia (indeks 0)
         marker.infoPages   = infoPages;   // wszystkie „ekrany” okienka
         marker.customInfo  = infoPages[0];// zgodność wsteczna
+
+        // ↓↓↓ DODANE: treść do wyszukiwania + (opcjonalnie) surowa grupa
+        marker.searchText = group
+          .map(({ev}) => `${ev.Nazwa || ''} ${ev.Adres || ''}`)
+          .join(' ')
+          .toLowerCase();
+        
+        marker.groupData = group; // nie jest wymagane w tej wersji, ale przyda się w przyszłości
         
         oms.addMarker(marker);
         markers.push(marker);
@@ -809,7 +817,9 @@ if (weekdayMap.hasOwnProperty(dn)) {
           }
       
           // Szukamy po pre-zbudowanym tekście markera (Nazwa + Adres dla całej grupy)
-          const hits = markers.filter(m => (m.searchText || '').includes(q));
+          // bierzemy pod uwagę tylko markery, które są aktualnie na mapie (po filtrze)
+          const hits = markers.filter(m => m.getMap() && (m.searchText || '').includes(q));
+
       
           // Brak wyników ⇒ komunikat i brak zmian na mapie/tekście
           if (!hits.length) {
