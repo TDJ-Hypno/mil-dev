@@ -795,7 +795,7 @@ if (weekdayMap.hasOwnProperty(dn)) {
     
       // ↓↓↓ DODANE: nasłuchy dla „Filtruj” i „Szukaj” (bez dodatkowych <script>)
       const filterBtn = document.getElementById('filterBtn');
-      if (filterBtn) filterBtn.addEventListener('click', () => applyFilter());
+      if (filterBtn) filterBtn.addEventListener('click', () => openFilterModal());
     
       const searchBtn = document.getElementById('searchBtn');
       if (searchBtn) {
