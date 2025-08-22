@@ -231,7 +231,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.181)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.182)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -630,6 +630,7 @@ if (weekdayMap.hasOwnProperty(dn)) {
         return { ev, s, e };
       })
       // 3) filtruj wg przedziału
+      .filter(Boolean)
       .filter(({s,e}) => !(s > endDate || e < startDate))
       // 4) sortuj malejąco po s → najdalsze jako pierwsze
       .sort((a,b) => b.s - a.s);
