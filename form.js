@@ -38,13 +38,14 @@ async function submitEvent(payload) {
 // === LOGIKA FORMULARZA ===
 function fillSelects() {
   const hours = [...Array(24)].map((_,i)=>i);
-  const mins  = [0, 15, 30, 45, 59];
+  const minsFrom  = [0, 10, 20, 30, 40, 50];
+  const minsTo    = [0, 10, 20, 30, 40, 50, 59];
   const sFH = $id('f_from_h'), sFM = $id('f_from_m');
   const sTH = $id('f_to_h'),   sTM = $id('f_to_m');
   sFH.innerHTML = hours.map(h=>`<option>${h}</option>`).join('');
   sTH.innerHTML = hours.map(h=>`<option>${h}</option>`).join('');
-  sFM.innerHTML = mins.map(m=>`<option>${m}</option>`).join('');
-  sTM.innerHTML = mins.map(m=>`<option>${m}</option>`).join('');
+  sFM.innerHTML = minsFrom.map(m=>`<option>${m}</option>`).join('');
+  sTM.innerHTML = minsTo  .map(m=>`<option>${m}</option>`).join('');
 }
 
 function setDefaults() {
