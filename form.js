@@ -1,6 +1,6 @@
 // === KONFIGURACJA BACKENDU (GAS Web App) ===
 // PODMIEŃ na swój adres wdrożenia Web App (doPost zapisujący do Arkusza):
-const SUBMIT_API = 'https://script.google.com/macros/s/…/exec';
+const SUBMIT_API = 'https://script.google.com/macros/s/AKfycbya_MHLx69_AhEukYVm0jQNMSOg1VG0G-xN6tD32_92fxWHzz1DzwEG57it3rPsWOErBw/exec';
 
 
 // === WALIDACJA / KONFIG DODATKOWA ===
