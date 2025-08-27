@@ -247,7 +247,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.185)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.186)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;">
   
@@ -362,35 +362,37 @@
         </select>
       </label>
   
-      <!-- 4. Data od -->
-      <label class="form-row">
-        <a href="#" class="hint" data-name="Data od">Data od</a>
-        <input id="f_from_d" type="date">
-      </label>
-  
-      <!-- 5. Godzina od (HH + MM) -->
-      <label class="form-row">
-        <a href="#" class="hint" data-name="Godzina od">Godzina od</a>
-        <div style="display:flex; gap:6px;">
-          <select id="f_from_h"></select>
-          <select id="f_from_m"></select>
-        </div>
-      </label>
-  
-      <!-- 6. Data do -->
-      <label class="form-row">
-        <a href="#" class="hint" data-name="Data do">Data do</a>
-        <input id="f_to_d" type="date">
-      </label>
-  
-      <!-- 7. Godzina do -->
-      <label class="form-row">
-        <a href="#" class="hint" data-name="Godzina do">Godzina do</a>
-        <div style="display:flex; gap:6px;">
-          <select id="f_to_h"></select>
-          <select id="f_to_m"></select>
-        </div>
-      </label>
+      <!-- OD: Data + Godzina w jednym wierszu -->
+      <div class="form-pair">
+        <label class="form-row">
+          <a href="#" class="hint" data-name="Data od">Data od</a>
+          <input id="f_from_d" type="date">
+        </label>
+      
+        <label class="form-row">
+          <a href="#" class="hint" data-name="Godzina od">Godzina od</a>
+          <div style="display:flex; gap:6px;">
+            <select id="f_from_h"></select>
+            <select id="f_from_m"></select>
+          </div>
+        </label>
+      </div>
+      
+      <!-- DO: Data + Godzina w jednym wierszu -->
+      <div class="form-pair">
+        <label class="form-row">
+          <a href="#" class="hint" data-name="Data do">Data do</a>
+          <input id="f_to_d" type="date">
+        </label>
+      
+        <label class="form-row">
+          <a href="#" class="hint" data-name="Godzina do">Godzina do</a>
+          <div style="display:flex; gap:6px;">
+            <select id="f_to_h"></select>
+            <select id="f_to_m"></select>
+          </div>
+        </label>
+      </div>
   
       <!-- 8. Parkietowe -->
       <label class="form-row">
