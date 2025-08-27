@@ -14,13 +14,13 @@ const HINTS = {
   'Data od': 'Data rozpoczęcia wydarzenia. (obowiązkowe)',
   'Godzina od': 'Godzina rozpoczęcia. (obowiązkowe)',
   'Data do': 'Data zakończenia, jeżeli wydarzenie ma zakończyć się choćby minutę po północy to wskaż już kolejny dzień. (obowiązkowe)',
-  'Godzina do*': 'Godzina zakończenia. 59 uzyj tylko wtedy kiedy wydarzenie kończy się o północy. (obowiązkowe)',
+  'Godzina do': 'Godzina zakończenia. 59 uzyj tylko wtedy kiedy wydarzenie kończy się o północy. (obowiązkowe)',
   'Parkietowe': 'Wpisz cenę biletu wraz z walutą (np. 35-50 Euro, 40 zł) lub „free”.',
   'Organizator': 'Nazwa organizatora lub imię i nazwisko (może być kilka osób).',
   'TDj': 'Imię i nazwisko/nick DJ-a (jeśli znany) Nie dopisuj "DJ" czy "TDJ".',
   'Typ muzyki': 'Np. klasyczna / nuevo / alternatywna / mix.',
   'Link': 'Link do wydarzenia/strony (FB, WWW itp.). (obowiązkowe)',
-  'Informacja': 'Krótki opis: ważne szczegóły, dress code, parking, zapisy itd. Max 2-3 zdnia pisane jedno po drugim w jednej linii.'
+  'Informacja': 'Krótki opis: ważne szczegóły, dress code, parking, zapisy itd. Max 2-3 zdnia pisane ciągiem (bez "Enterów").'
 };
 
 // === API ===
