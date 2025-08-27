@@ -64,7 +64,7 @@ const $id  = (x) => document.getElementById(x);
 const pad2 = (n) => n.toString().padStart(2, '0');
 
 // "YYYY-MM-DD HH:MM" (lub '' jeśli brak daty)
-const makeDateTime = (d, h, m) => d ? `${d} ${pad2(h)}:${pad2(m)}` : '';
+const makeDateTime = (d, h, m) => d ? `${d} ${pad2(h)}:${pad2(m)}:00` : '';
 
 // Teksty podpowiedzi (po kliknięciu w nazwę pola)
 const HINTS = {
@@ -204,22 +204,27 @@ async function validateBeforeSubmit() {
     if (!go) return { ok:false };
   }
 
-  // 6) Link — format + próba weryfikacji
-  const link = $id('f_link').value.trim();
-  if (link) {
-    const exists = await checkUrlExists(link);
-    if (exists === false) {
-      msg('Podany link wygląda na nieistniejący. Sprawdź adres strony.');
-      return { ok:false };
-    }
-    if (exists === 'unknown') {
-      const go = confirm('Nie udało się potwierdzić istnienia strony (CORS). Czy mimo to wysłać?');
-      if (!go) return { ok:false };
-    }
+  // 6) Link — wymagany + format + próba weryfikacji
+  let link = $id('f_link').value.trim();
+  if (!link) {
+    msg('Pole „Link do wydarzenia/strony” jest wymagane.');
+    return { ok:false };
   }
-
-  return { ok:true };
-}
+  // jeśli ktoś wpisał bez protokołu – domyślnie dodaj https://
+  if (!/^https?:\/\//i.test(link)) {
+    link = 'https://' + link;
+    $id('f_link').value = link; // zaktualizuj pole, żeby payload dostał poprawną wartość
+  }
+  
+  const exists = await checkUrlExists(link);
+  if (exists === false) {
+    msg('Podany link wygląda na nieistniejący. Sprawdź adres strony.');
+    return { ok:false };
+  }
+  if (exists === 'unknown') {
+    const go = confirm('Nie udało się potwierdzić istnienia strony (CORS). Czy mimo to wysłać?');
+    if (!go) return { ok:false };
+  }
 
 
 // === UI / LOGIKA FORMULARZA ===
@@ -303,12 +308,10 @@ function bindForm() {
 
   // Wysyłka
   $id('submitSendBtn').addEventListener('click', async ()=>{
-    const payload = getPayload();
-    if (!payload) return;
-
-    // Walidacja
     const v = await validateBeforeSubmit();
     if (!v.ok) return;
+    
+    const payload = getPayload();
 
     // Blokada przycisku na czas wysyłki
     const btn = $id('submitSendBtn');
