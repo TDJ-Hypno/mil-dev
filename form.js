@@ -225,6 +225,8 @@ async function validateBeforeSubmit() {
     const go = confirm('Nie udało się potwierdzić istnienia strony (CORS). Czy mimo to wysłać?');
     if (!go) return { ok:false };
   }
+  return { ok:true };
+}
 
 
 // === UI / LOGIKA FORMULARZA ===
