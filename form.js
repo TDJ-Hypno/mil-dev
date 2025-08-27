@@ -8,19 +8,19 @@ const makeDateTime = (d, h, m) => d ? `${d} ${pad2(h)}:${pad2(m)}` : ''; // "YYY
 
 // Teksty podpowiedzi dla linków (kliknięcie nazwy pola)
 const HINTS = {
-  'Nazwa wydarzenia': 'Podaj pełną nazwę tak, by uczestnicy łatwo rozpoznali wydarzenie.',
-  'Adres': 'Pełny adres (ulica, numer, miasto). Dzięki temu łatwiej wyznaczyć trasę.',
-  'Dzień tygodnia': 'Zaznacz, jeśli wydarzenie jest cykliczne (np. w każdą środę). Zostaw puste dla jednorazowych.',
-  'Data od': 'Data rozpoczęcia. Domyślnie ustawiamy bieżącą datę.',
-  'Godzina od': 'Godzina rozpoczęcia. Minuty mają wartości 0/15/30/45 i 59 dla „do pełna”.',
-  'Data do': 'Data zakończenia (zwykle ta sama co „Data od”).',
-  'Godzina do': 'Godzina zakończenia. 59 pozwala zaznaczyć „do pełnej godziny”.',
-  'Parkietowe': 'Wpisz cenę biletu lub „free”.',
-  'Organizator': 'Nazwa organizatora lub szkoły.',
-  'TDj': 'Imię/nick DJ-a (jeśli znany).',
+  'Nazwa wydarzenia*': 'Podaj nazwę tak, by uczestnicy łatwo rozpoznali wydarzenie i mogli je odnaleźć w sieci. (obowiązkowe)',
+  'Adres*': 'Pełny adres (nazwa np. knajpy, ulica, numer, miasto, kraj). Najlepiej najpierw odszukaj dokładnie miejsce na mapie Google, a nstępnie skopiuj adres tego miejsca. Dzięki temu łatwiej wyznaczyć trasę. (obowiązkowe)',
+  'Dzień tygodnia': 'Jeśli wydarzenie jest cykliczne, wybierz dzień tygodnia w którym jest organizowane (np. środa). Zostaw puste dla jednorazowych. Cykliczne wydarzenia miesięczne czy kwartalne rejestrujemy jako oddzielne.',
+  'Data od*': 'Data rozpoczęcia wydarzenia. (obowiązkowe)',
+  'Godzina od*': 'Godzina rozpoczęcia. (obowiązkowe)',
+  'Data do*': 'Data zakończenia, jeżeli wydarzenie ma zakończyć się choćby minutę po północy to wskaż już kolejny dzień. (obowiązkowe)',
+  'Godzina do*': 'Godzina zakończenia. 59 uzyj tylko wtedy kiedy wydarzenie kończy się o północy. (obowiązkowe)',
+  'Parkietowe': 'Wpisz cenę biletu wraz z walutą (np. 35-50 Euro, 40 zł) lub „free”.',
+  'Organizator': 'Nazwa organizatora lub imię i nazwisko (może być kilka osób).',
+  'TDj': 'Imię i nazwisko/nick DJ-a (jeśli znany) Nie dopisuj "DJ" czy "TDJ".',
   'Typ muzyki': 'Np. klasyczna / nuevo / alternatywna / mix.',
-  'Link': 'Link do wydarzenia/strony (FB, WWW itp.).',
-  'Informacja': 'Krótki opis: ważne szczegóły, dress code, parking, zapisy itd.'
+  'Link*': 'Link do wydarzenia/strony (FB, WWW itp.). (obowiązkowe)',
+  'Informacja': 'Krótki opis: ważne szczegóły, dress code, parking, zapisy itd. Max 2-3 zdnia pisane jedno po drugim w jednej linii.'
 };
 
 // === API ===
