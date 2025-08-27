@@ -1,5 +1,5 @@
 // === KONFIGURACJA ===
-const SUBMIT_API = 'WSTAW_TUTAJ_URL_TWOJEGO_WEB_APP'; // patrz krok 5
+const SUBMIT_API = 'https://script.google.com/macros/s/AKfycbyAscSbg-RLfqu9qmLUGpQeOpo7G3vybQTuz2oNGpNc01swtwoJelKze4kwsMFaxmULwg/exec'; // patrz krok 5
 
 // === POMOCNIKI ===
 const $id = (x) => document.getElementById(x);
