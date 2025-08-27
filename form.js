@@ -9,7 +9,7 @@ const makeDateTime = (d, h, m) => d ? `${d} ${pad2(h)}:${pad2(m)}` : ''; // "YYY
 // Teksty podpowiedzi dla linków (kliknięcie nazwy pola)
 const HINTS = {
   'Nazwa wydarzenia': 'Podaj nazwę tak, by uczestnicy łatwo rozpoznali wydarzenie i mogli je odnaleźć w sieci. (obowiązkowe)',
-  'Adres*': 'Pełny adres (nazwa np. knajpy, ulica, numer, miasto, kraj). Najlepiej najpierw odszukaj dokładnie miejsce na mapie Google, a nstępnie skopiuj adres tego miejsca. Dzięki temu łatwiej wyznaczyć trasę. (obowiązkowe)',
+  'Adres': 'Pełny adres (nazwa np. knajpy, ulica, numer, miasto, kraj). Najlepiej najpierw odszukaj dokładnie miejsce na mapie Google, a nstępnie skopiuj adres tego miejsca. Dzięki temu łatwiej wyznaczyć trasę. (obowiązkowe)',
   'Dzień tygodnia': 'Jeśli wydarzenie jest cykliczne, wybierz dzień tygodnia w którym jest organizowane (np. środa). Zostaw puste dla jednorazowych. Cykliczne wydarzenia miesięczne czy kwartalne rejestrujemy jako oddzielne.',
   'Data od': 'Data rozpoczęcia wydarzenia. (obowiązkowe)',
   'Godzina od': 'Godzina rozpoczęcia. (obowiązkowe)',
