@@ -1,5 +1,5 @@
 // === KONFIGURACJA ===
-const SUBMIT_API = 'https://script.google.com/macros/s/AKfycbyAscSbg-RLfqu9qmLUGpQeOpo7G3vybQTuz2oNGpNc01swtwoJelKze4kwsMFaxmULwg/exec'; // patrz krok 5
+const SUBMIT_API = 'https://script.google.com/macros/s/AKfycbya_MHLx69_AhEukYVm0jQNMSOg1VG0G-xN6tD32_92fxWHzz1DzwEG57it3rPsWOErBw/exec'; // patrz krok 5
 
 // === POMOCNIKI ===
 const $id = (x) => document.getElementById(x);
