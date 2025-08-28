@@ -51,9 +51,7 @@
     #emailPanel {
       display: inline-flex;
       align-items: center;
-      width: 26px;      /* dostosuj – np. 26–32px */
-      height: auto;     /* zachowaj proporcje */
-      object-fit: contain;
+      gap: 6px;  
     }
     
     .visit-panel {
@@ -88,6 +86,13 @@
         width: 16px;
         height: 16px;
     }
+
+    #emailPanel .legend-icon {
+      width: 32px;      /* ustaw pożądaną szerokość, np. 28–36 px */
+      height: auto;     /* proporcje zachowane */
+      display: block;
+    }
+
     
     #contactTooltip {
       display: none;
@@ -257,7 +262,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.187)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.188)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;" onclick="window.openSubmitModal && window.openSubmitModal();">    
     <img class="legend-icon" src="dodaj.svg" alt="Dodaj wydarzenie">
