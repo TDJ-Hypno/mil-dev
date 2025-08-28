@@ -4,7 +4,7 @@ const SUBMIT_API = 'https://script.google.com/macros/s/AKfycbya_MHLx69_AhEukYVm0
 const LINK_CHECK_API = SUBMIT_API; // jeśli używasz tego samego WebAppa
 
 // --- toggles dla walidacji linku (tymczasowo wyłączone) ---
-const REQUIRE_LINK = false; // jeśli true: pole Link musi być wypełnione
+const REQUIRE_LINK = true; // jeśli true: pole Link musi być wypełnione
 const VERIFY_LINK  = false; // jeśli true: sprawdzaj istnienie strony (GAS/HEAD/GET)
 
 // === WALIDACJA / KONFIG DODATKOWA ===
