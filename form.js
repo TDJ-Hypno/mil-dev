@@ -3,6 +3,10 @@
 const SUBMIT_API = 'https://script.google.com/macros/s/AKfycbya_MHLx69_AhEukYVm0jQNMSOg1VG0G-xN6tD32_92fxWHzz1DzwEG57it3rPsWOErBw/exec';
 const LINK_CHECK_API = SUBMIT_API; // jeśli używasz tego samego WebAppa
 
+// --- toggles dla walidacji linku (tymczasowo wyłączone) ---
+const REQUIRE_LINK = false; // jeśli true: pole Link musi być wypełnione
+const VERIFY_LINK  = false; // jeśli true: sprawdzaj istnienie strony (GAS/HEAD/GET)
+
 // === WALIDACJA / KONFIG DODATKOWA ===
 // Jeśli chcesz faktycznie weryfikować adresy przez Google Geocoding API, ustaw USE_GEOCODING=true
 // i wpisz klucz w GEOCODE_API_KEY (pamiętaj o ograniczeniach referrer).
@@ -213,30 +217,33 @@ async function validateBeforeSubmit() {
     if (!go) return { ok:false };
   }
 
-  // 6) Link — wymagany + format + próba weryfikacji
+  // 6) Link — wymagany + format + próba weryfikacji (sterowane flagami powyżej)
   let link = $id('f_link').value.trim();
-  if (!link) {
+  
+  // wymaganie pola – tylko jeśli włączone
+  if (REQUIRE_LINK && !link) {
     msg('Pole „Link do wydarzenia/strony” jest wymagane.');
     return { ok:false };
   }
-  // jeśli ktoś wpisał bez protokołu – domyślnie dodaj https://
-  if (!/^https?:\/\//i.test(link)) {
+  
+  // jeśli coś wpisano, to ewentualnie dołóż https:// (nawet gdy weryfikacja wyłączona)
+  if (link && !/^https?:\/\//i.test(link)) {
     link = 'https://' + link;
-    $id('f_link').value = link; // zaktualizuj pole, żeby payload dostał poprawną wartość
+    $id('f_link').value = link; // ujednolić payload
   }
   
-  const exists = await checkUrlExists(link);
-  if (exists === false) {
-    msg('Podany link wygląda na nieistniejący. Sprawdź adres strony.');
-    return { ok:false };
+  // faktyczna weryfikacja istnienia strony – tylko jeśli włączona
+  if (VERIFY_LINK && link) {
+    const exists = await checkUrlExists(link);
+    if (exists === false) {
+      msg('Podany link wygląda na nieistniejący. Sprawdź adres strony.');
+      return { ok:false };
+    }
+    if (exists === 'unknown') {
+      const go = confirm('Nie udało się potwierdzić istnienia strony (CORS). Czy mimo to wysłać?');
+      if (!go) return { ok:false };
+    }
   }
-  if (exists === 'unknown') {
-    const go = confirm('Nie udało się potwierdzić istnienia strony (CORS). Czy mimo to wysłać?');
-    if (!go) return { ok:false };
-  }
-  return { ok:true };
-}
-
 
 // === UI / LOGIKA FORMULARZA ===
 function fillSelects() {
