@@ -1,7 +1,7 @@
 // === KONFIGURACJA BACKENDU (GAS Web App) ===
 // PODMIEŃ na swój adres wdrożenia Web App (doPost zapisujący do Arkusza):
 const SUBMIT_API = 'https://script.google.com/macros/s/AKfycbya_MHLx69_AhEukYVm0jQNMSOg1VG0G-xN6tD32_92fxWHzz1DzwEG57it3rPsWOErBw/exec';
-
+const LINK_CHECK_API = SUBMIT_API; // jeśli używasz tego samego WebAppa
 
 // === WALIDACJA / KONFIG DODATKOWA ===
 // Jeśli chcesz faktycznie weryfikować adresy przez Google Geocoding API, ustaw USE_GEOCODING=true
@@ -39,6 +39,17 @@ async function geocodeAddress(addr) {
 // Sprawdź czy URL istnieje (z uwzględnieniem CORS): true | false | 'unknown'
 async function checkUrlExists(u) {
   if (!u) return true;
+  // 1) spróbuj serwerowo przez GAS (bez CORS problemów)
+  if (typeof LINK_CHECK_API === 'string' && LINK_CHECK_API) {
+    try {
+      const res = await fetch(`${LINK_CHECK_API}?action=checkUrl&u=${encodeURIComponent(u)}`, { method: 'GET' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.ok === true) return !!data.exists;
+      }
+    } catch (_) { /* spadamy do fallbacku */ }
+  }
+  // 2) fallback: próba z przeglądarki (często blokowane przez CORS)
   try {
     const url = new URL(u);
     if (!/^https?:$/.test(url.protocol)) return false;
@@ -46,18 +57,16 @@ async function checkUrlExists(u) {
 
   try {
     const r = await fetch(u, { method: 'HEAD', mode: 'cors' });
-    return r.ok ? true : false;
+    return r.ok;
   } catch {
     try {
       const r2 = await fetch(u, { method: 'GET', mode: 'cors' });
-      return r2.ok ? true : false;
+      return r2.ok;
     } catch {
-      // Wiele serwisów (np. FB) blokuje CORS — nie potrafimy potwierdzić
       return 'unknown';
     }
   }
 }
-
 
 // === POMOCNIKI UI / FORMATOWANIE ===
 const $id  = (x) => document.getElementById(x);
