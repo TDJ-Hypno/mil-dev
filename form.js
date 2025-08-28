@@ -309,9 +309,18 @@ function clearForm() {
 }
 
 function bindForm() {
-  // Koperta (panel) – dodatkowy bezpiecznik, w HTML też wywołujemy window.openSubmitModal()
+  // Koperta (panel): obsłuż click + touchend (Android)
   const emailPanel = document.getElementById('emailPanel');
-  if (emailPanel) emailPanel.addEventListener('click', (e)=>{ e.stopPropagation(); openSubmitModal(); });
+  if (emailPanel) {
+    const openForm = (e) => {
+      e.preventDefault();      // blokuje „ghost click” po dotyku
+      e.stopPropagation();     // nie pozwala klikowi bąbelkować wyżej
+      openSubmitModal();
+    };
+    emailPanel.addEventListener('click', openForm);
+    emailPanel.addEventListener('touchend', openForm, { passive: false });
+  }
+
 
   // Przyciski modala
   $id('submitCloseBtn').addEventListener('click', closeSubmitModal);
