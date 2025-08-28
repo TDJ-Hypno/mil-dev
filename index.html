@@ -262,7 +262,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.189)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.190)</div>
 
   <div class="info-panel" id="emailPanel" style="left: 250px;" onclick="window.openSubmitModal && window.openSubmitModal();">    
     <img class="legend-icon" src="dodaj.svg" alt="Dodaj wydarzenie">
@@ -1169,26 +1169,35 @@ if (weekdayMap.hasOwnProperty(dn)) {
     );
   }
 
-  // 2) Przechwyć prompt i – gdy parametr settings=1 – wywołaj go od razu
-  let deferredPrompt;
-  window.addEventListener('beforeinstallprompt', e => {
+  // 2) Flaga z URL — czy mamy od razu pokazać modal Ustawień
+  const params = new URLSearchParams(window.location.search);
+  const wantInstall = params.get('settings') === '1';
+  if (wantInstall) {
+    const modal = document.getElementById('settingsModal');
+    if (modal) modal.style.display = 'block';   // pokaż modal natychmiast
+  }
+
+  // 3) Przechwyć beforeinstallprompt — zachowaj event do użycia po kliknięciu
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
 
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('settings') === '1') {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(choice => {
-        console.log('Install choice:', choice.outcome);
-        deferredPrompt = null;
-      });
+    // jeśli przyszliśmy z ?settings=1 i event dopiero teraz przyszedł — upewnij się, że modal jest otwarty
+    if (wantInstall) {
+      const modal = document.getElementById('settingsModal');
+      if (modal) modal.style.display = 'block';
     }
   });
 
-  // 3) Hook przycisk – nadal działa ręczne wywołanie
+  // 4) Przycisk w modalu
   document.getElementById('addShortcutBtn')
     .addEventListener('click', async () => {
-      if (!deferredPrompt) return;
+      if (!deferredPrompt) {
+        // fallback: np. iOS/Safari lub warunki nie są spełnione
+        alert('Jeśli nie widzisz natywnego okna instalacji, użyj menu przeglądarki: „Dodaj do ekranu głównego”.');
+        return;
+      }
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       console.log('Install choice:', outcome);
