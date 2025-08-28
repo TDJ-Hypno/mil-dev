@@ -244,6 +244,8 @@ async function validateBeforeSubmit() {
       if (!go) return { ok:false };
     }
   }
+    return { ok:true };
+} 
 
 // === UI / LOGIKA FORMULARZA ===
 function fillSelects() {
