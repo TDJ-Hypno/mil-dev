@@ -86,14 +86,7 @@
         width: 16px;
         height: 16px;
     }
-
-    /* Ikona kalendarza w panelu */
-    #calendarPanel .legend-icon {
-      width: 40px;   /* zmień wg gustu: 36–64 px */
-      height: auto;
-      display: block;
-    }
-    
+        
     /* Modal kalendarza */
     #calendarModal {
       display:none;
@@ -109,6 +102,7 @@
       width:min(92vw, 640px);
       font-family:'Arial Black', sans-serif;
       font-size:12px;
+      pointer-events: auto; z-index: 3000;
     }
     .cal-header {
       display:flex; align-items:center; gap:6px; justify-content:center; margin-bottom:8px;
@@ -131,17 +125,6 @@
     .cal-other { opacity:.45; }
     .cal-today { outline:2px solid red; outline-offset:-2px; font-weight:bold; }
     .cal-footer { margin-top:8px; text-align:right; }
-
-
-    /* Kalendarz w górnym panelu */
-    #calendarPanel .legend-icon {
-      width: 48px;   /* możesz zmienić np. 56px, 64px… */
-      height: auto;  /* zachowaj proporcje */
-      display: block;
-    }
-    /* (opcjonalnie, gdyby coś przycinało) */
-    #calendarPanel { overflow: visible; }
-
 
     #emailPanel .legend-icon {
       width: 56px;      /* ustaw pożądaną szerokość, np. 28–36 px */
@@ -323,12 +306,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.192)</div>
-
-  <div class="info-panel" id="calendarPanel" style="left: 200px;">
-    <img class="legend-icon" src="Kalendarz.svg" alt="Kalendarz">
-  </div>
-
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.193)</div>
 
   <div class="info-panel" id="calendarPanel" style="left: 220px;">
     <img class="legend-icon" src="kalendarz.svg" alt="Kalendarz">
@@ -541,16 +519,16 @@
   <div id="calendarModal">
     <div class="cal-header">
       <span class="spacer"></span>
-      <button id="calPrevYear">«</button>
-      <button id="calPrevMonth">‹</button>
-      <span id="calTitle">Miesiąc RRRR</span>
-      <button id="calNextMonth">›</button>
-      <button id="calNextYear">»</button>
-      <button id="calClose" class="custom-button" style="margin-left:8px;">×</button>
+        <button id="calPrevYear"  type="button">«</button>
+        <button id="calPrevMonth" type="button">‹</button>
+        <span id="calTitle">Miesiąc RRRR</span>
+        <button id="calNextMonth" type="button">›</button>
+        <button id="calNextYear"  type="button">»</button>
+        <button id="calClose"     type="button" class="custom-button" style="margin-left:8px;">×</button>
     </div>
     <div id="calGrid"></div>
     <div class="cal-footer">
-      <button id="calToday" class="custom-button">Dziś</button>
+      <button id="calToday"     type="button" class="custom-button">Dziś</button>
     </div>
   </div>
 
