@@ -87,6 +87,52 @@
         height: 16px;
     }
 
+    /* Ikona kalendarza w panelu */
+    #calendarPanel .legend-icon {
+      width: 40px;   /* zmień wg gustu: 36–64 px */
+      height: auto;
+      display: block;
+    }
+    
+    /* Modal kalendarza */
+    #calendarModal {
+      display:none;
+      position:fixed;
+      top:60px;
+      left:50%;
+      transform:translateX(-50%);
+      background: lightgray;
+      padding:16px;
+      border:1px solid #ccc;
+      border-radius:8px;
+      z-index:2004;
+      width:min(92vw, 640px);
+      font-family:'Arial Black', sans-serif;
+      font-size:12px;
+    }
+    .cal-header {
+      display:flex; align-items:center; gap:6px; justify-content:center; margin-bottom:8px;
+    }
+    .cal-header .spacer { flex: 1 1 auto; }
+    .cal-header button {
+      padding: 2px 8px; border:1px solid #888; border-radius:6px; background:#fff; cursor:pointer;
+    }
+    #calTitle { font-weight:bold; min-width: 180px; text-align:center; }
+    
+    #calGrid {
+      display:grid; grid-template-columns: repeat(7, 1fr); gap:4px;
+    }
+    .cal-dayname {
+      text-align:center; padding:6px; background:#fff; border:1px solid #888; border-radius:6px;
+    }
+    .cal-cell {
+      min-height:48px; padding:6px; background:#fff; border:1px solid #888; border-radius:6px; text-align:right;
+    }
+    .cal-other { opacity:.45; }
+    .cal-today { outline:2px solid red; outline-offset:-2px; font-weight:bold; }
+    .cal-footer { margin-top:8px; text-align:right; }
+
+
     /* Kalendarz w górnym panelu */
     #calendarPanel .legend-icon {
       width: 48px;   /* możesz zmienić np. 56px, 64px… */
@@ -277,7 +323,12 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.191)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.192)</div>
+
+  <div class="info-panel" id="calendarPanel" style="left: 200px;">
+    <img class="legend-icon" src="Kalendarz.svg" alt="Kalendarz">
+  </div>
+
 
   <div class="info-panel" id="calendarPanel" style="left: 220px;">
     <img class="legend-icon" src="kalendarz.svg" alt="Kalendarz">
@@ -485,6 +536,24 @@
       <button id="hintCloseBtn" class="custom-button">Zamknij</button>
     </div>
   </div>
+
+  <!-- Modal Kalendarza -->
+  <div id="calendarModal">
+    <div class="cal-header">
+      <span class="spacer"></span>
+      <button id="calPrevYear">«</button>
+      <button id="calPrevMonth">‹</button>
+      <span id="calTitle">Miesiąc RRRR</span>
+      <button id="calNextMonth">›</button>
+      <button id="calNextYear">»</button>
+      <button id="calClose" class="custom-button" style="margin-left:8px;">×</button>
+    </div>
+    <div id="calGrid"></div>
+    <div class="cal-footer">
+      <button id="calToday" class="custom-button">Dziś</button>
+    </div>
+  </div>
+
   
   <!-- Modal Ustawień -->
   <div id="settingsModal" style="display:none;
@@ -1275,6 +1344,131 @@ if (weekdayMap.hasOwnProperty(dn)) {
     });
   </script>
 
+  <script>
+    (function(){
+      // Elementy
+      const calModal = document.getElementById('calendarModal');
+      const calTitle = document.getElementById('calTitle');
+      const calGrid  = document.getElementById('calGrid');
+      const btnOpen  = document.getElementById('calendarPanel');
+    
+      const btnPrevM = document.getElementById('calPrevMonth');
+      const btnNextM = document.getElementById('calNextMonth');
+      const btnPrevY = document.getElementById('calPrevYear');
+      const btnNextY = document.getElementById('calNextYear');
+      const btnToday = document.getElementById('calToday');
+      const btnClose = document.getElementById('calClose');
+    
+      if (!calModal || !calTitle || !calGrid) return; // bezpieczeństwo
+    
+      // Stan
+      const monthNames = ['styczeń','luty','marzec','kwiecień','maj','czerwiec','lipiec','sierpień','wrzesień','październik','listopad','grudzień'];
+      const dayNames   = ['Pn','Wt','Śr','Cz','Pt','So','Nd']; // poniedziałek jako pierwszy
+      let cur = new Date();  // bieżący „widok” kalendarza (zmieniamy tu miesiąc/rok)
+      cur.setDate(1);        // ustaw na 1. dzień miesiąca
+    
+      function renderCalendar(d) {
+        const y = d.getFullYear();
+        const m = d.getMonth();
+    
+        // Tytuł
+        calTitle.textContent = `${monthNames[m]} ${y}`;
+    
+        // Wyczyszczenie siatki
+        calGrid.innerHTML = '';
+    
+        // Nagłówki dni
+        for (const dn of dayNames) {
+          const el = document.createElement('div');
+          el.className = 'cal-dayname';
+          el.textContent = dn;
+          calGrid.appendChild(el);
+        }
+    
+        // Indeks pierwszego dnia (pon=0 … nd=6)
+        const first = new Date(y, m, 1);
+        const startIdx = (first.getDay() + 6) % 7; // getDay(): nd=0 → chcemy pn=0
+    
+        const daysInMonth = new Date(y, m+1, 0).getDate();
+        const daysPrev    = new Date(y, m,   0).getDate();
+    
+        // Ile pustych z poprzedniego miesiąca
+        const leading = startIdx;
+    
+        // 6 tygodni * 7 kolumn = 42 komórki (wystarcza na każdy układ)
+        const totalCells = 42;
+    
+        // Dziś (do podświetlenia)
+        const today = new Date(); today.setHours(0,0,0,0);
+    
+        for (let i=0; i<totalCells; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'cal-cell';
+    
+          let dayNum, inThisMonth = true;
+          if (i < leading) {
+            // poprzedni miesiąc
+            dayNum = daysPrev - leading + 1 + i;
+            inThisMonth = false;
+          } else if (i < leading + daysInMonth) {
+            // bieżący miesiąc
+            dayNum = i - leading + 1;
+          } else {
+            // następny miesiąc
+            dayNum = i - (leading + daysInMonth) + 1;
+            inThisMonth = false;
+          }
+    
+          // data tej komórki (do „dziś”)
+          let cellDate;
+          if (i < leading) {
+            const prevM = (m - 1 + 12) % 12;
+            const prevY = (m === 0) ? y - 1 : y;
+            cellDate = new Date(prevY, prevM, dayNum);
+          } else if (i < leading + daysInMonth) {
+            cellDate = new Date(y, m, dayNum);
+          } else {
+            const nextM = (m + 1) % 12;
+            const nextY = (m === 11) ? y + 1 : y;
+            cellDate = new Date(nextY, nextM, dayNum);
+          }
+          cellDate.setHours(0,0,0,0);
+    
+          cell.textContent = dayNum;
+          if (!inThisMonth) cell.classList.add('cal-other');
+          if (cellDate.getTime() === today.getTime()) {
+            cell.classList.add('cal-today');
+          }
+    
+          calGrid.appendChild(cell);
+        }
+      }
+    
+      // Otwieranie modala
+      if (btnOpen) {
+        const open = (e) => { e?.preventDefault?.(); e?.stopPropagation?.(); calModal.style.display = 'block'; renderCalendar(cur); };
+        btnOpen.addEventListener('click', open);
+        btnOpen.addEventListener('touchend', open, { passive:false });
+      }
+    
+      // Nawigacja
+      btnPrevMonth?.addEventListener('click', () => { cur.setMonth(cur.getMonth()-1); renderCalendar(cur); });
+      btnNextMonth?.addEventListener('click', () => { cur.setMonth(cur.getMonth()+1); renderCalendar(cur); });
+      btnPrevYear ?.addEventListener('click', () => { cur.setFullYear(cur.getFullYear()-1); renderCalendar(cur); });
+      btnNextYear ?.addEventListener('click', () => { cur.setFullYear(cur.getFullYear()+1); renderCalendar(cur); });
+      btnToday    ?.addEventListener('click', () => { const t=new Date(); cur.setFullYear(t.getFullYear(), t.getMonth(), 1); renderCalendar(cur); });
+    
+      // Zamknięcie
+      btnClose?.addEventListener('click', () => { calModal.style.display='none'; });
+      window.addEventListener('keydown', (e)=>{ if (e.key==='Escape') calModal.style.display='none'; });
+    
+      // Klik w tło modala — jeśli chcesz zamykać (opcjonalnie, gdy modal ma tło/overlay)
+      // calModal.addEventListener('click', (e)=>{ if(e.target===calModal) calModal.style.display='none'; });
+    
+    })();
+    </script>
+
+  
   <script src="form.js?v=3"></script>
   
 </body>
