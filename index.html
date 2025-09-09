@@ -322,7 +322,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.195)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.196)</div>
 
   <div class="info-panel" id="calendarPanel" style="left: 220px;">
     <img class="legend-icon" src="kalendarz.svg" alt="Kalendarz">
@@ -787,6 +787,7 @@
           }
                     
           displayEvents(from, to);
+            if (window.refreshCalendar) window.refreshCalendar();
 
             // ➌ Po zastosowaniu filtra przywróć widok mapy z pierwszego uruchomienia
             if (initialCenter && typeof initialZoom === 'number') {
@@ -1142,6 +1143,8 @@ if (weekdayMap.hasOwnProperty(dn)) {
           // 3) Dopisz do „Wybrano: …” informację o wyszukiwaniu
           const sel = document.getElementById('selectedFilter');
           sel.textContent = `${selectedFilterBase}, zawierające: ${qRaw} (znaleziono ${hits.length})`;
+          if (window.refreshCalendar) window.refreshCalendar();
+
         };
       
         searchBtn.addEventListener('click', runSearch);
@@ -1466,7 +1469,18 @@ if (weekdayMap.hasOwnProperty(dn)) {
           if (cellDate.getTime() === today.getTime()) {
             cell.classList.add('cal-today');
           }
-    
+
+          // badge z liczbą widocznych wydarzeń w tym dniu
+          const ymd = `${cellDate.getFullYear()}-${String(cellDate.getMonth()+1).padStart(2,'0')}-${String(cellDate.getDate()).padStart(2,'0')}`;
+          const c = counts.get(ymd);
+          if (c) {
+            cell.classList.add('cal-has');
+            const badge = document.createElement('span');
+            badge.className = 'cal-badge';
+            badge.textContent = c;
+            cell.appendChild(badge);
+          }
+          
           calGrid.appendChild(cell);
         }
       }
@@ -1508,7 +1522,15 @@ if (weekdayMap.hasOwnProperty(dn)) {
     
       // Klik w tło modala — jeśli chcesz zamykać (opcjonalnie, gdy modal ma tło/overlay)
       // calModal.addEventListener('click', (e)=>{ if(e.target===calModal) calModal.style.display='none'; });
-    
+
+      // Publiczny odświeżacz – wołaj po filtrze/szukaj, jeśli modal jest otwarty
+      window.refreshCalendar = function(){
+        if (calModal && calModal.style.display === 'block') {
+          renderCalendar(cur);
+        }
+      };
+
+      
     })();
     </script>
 
