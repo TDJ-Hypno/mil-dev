@@ -120,7 +120,13 @@
       text-align:center; padding:6px; background:#fff; border:1px solid #888; border-radius:6px;
     }
     .cal-cell {
-      min-height:48px; padding:6px; background:#fff; border:1px solid #888; border-radius:6px; text-align:right;
+      min-height:48px;
+      padding:6px;
+      background:#fff;
+      border:1px solid #888;
+      border-radius:6px;
+      text-align:right;
+      position: relative;
     }
     .cal-other { opacity:.45; }
     .cal-today { outline:2px solid red; outline-offset:-2px; font-weight:bold; }
@@ -288,7 +294,7 @@
     }
 
     /* Kalendarz: dni z wydarzeniami (badge) */
-    .cal-has { position: relative; background: #fffef0; }
+    .cal-has { position: relative; background: #fff3a6; }
     .cal-badge {
       position: absolute; left: 6px; top: 6px;
       font-size: 11px; line-height: 18px; padding: 0 6px;
@@ -313,6 +319,15 @@
       font-size: clamp(16px, 3.8vw, 24px);
       line-height: 1;
       pointer-events: none; /* nie przechwytuje klików */
+    }
+
+    /* Numer dnia w prawym górnym rogu */
+    .cal-daynum{
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-style: italic;
+      color: #0b5d1e;   /* ciemnozielony */
     }
     
     /* Opcjonalne: delikatne podbicie tła dla dni z liczbą */
@@ -345,7 +360,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.197)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.198)</div>
 
   <div class="info-panel" id="calendarPanel" style="left: 220px;">
     <img class="legend-icon" src="kalendarz.svg" alt="Kalendarz">
@@ -1522,7 +1537,11 @@ if (weekdayMap.hasOwnProperty(dn)) {
           }
           cellDate.setHours(0,0,0,0);
     
-          cell.textContent = dayNum;
+          const dnEl = document.createElement('span');
+          dnEl.className = 'cal-daynum';
+          dnEl.textContent = dayNum;
+          cell.appendChild(dnEl);
+
           if (!inThisMonth) cell.classList.add('cal-other');
           if (cellDate.getTime() === today.getTime()) {
             cell.classList.add('cal-today');
