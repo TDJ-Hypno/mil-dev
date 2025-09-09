@@ -295,6 +295,29 @@
       background: #ffd54f; border: 1px solid #888; border-radius: 10px;
     }
 
+    /* Stopka kalendarza: checkboxy + Dziś w jednym wierszu */
+    .cal-footer { 
+      margin-top: 8px; 
+      display: flex; 
+      align-items: center; 
+      gap: 10px; 
+    }
+    
+    /* Duża liczba na środku kratki */
+    .cal-count {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      font-weight: bold;
+      font-size: clamp(16px, 3.8vw, 24px);
+      line-height: 1;
+      pointer-events: none; /* nie przechwytuje klików */
+    }
+    
+    /* Opcjonalne: delikatne podbicie tła dla dni z liczbą */
+    .cal-has { position: relative; }
+
     
   </style>
 </head>
@@ -322,7 +345,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.196)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.197)</div>
 
   <div class="info-panel" id="calendarPanel" style="left: 220px;">
     <img class="legend-icon" src="kalendarz.svg" alt="Kalendarz">
@@ -543,9 +566,14 @@
         <button id="calClose"     type="button" class="custom-button" style="margin-left:8px;">×</button>
     </div>
     <div id="calGrid"></div>
-    <div class="cal-footer">
-      <button id="calToday"     type="button" class="custom-button">Dziś</button>
+    <div class="cal-footer" id="calLegend">
+      <label><input type="checkbox" id="calOptStart" checked> Start</label>
+      <label><input type="checkbox" id="calOptEnd"   checked> Stop</label>
+      <label><input type="checkbox" id="calOptMid"   checked> Trwa</label>
+      <div style="flex:1"></div>
+      <button id="calToday" type="button" class="custom-button">Dziś</button>
     </div>
+
   </div>
 
   
@@ -1060,11 +1088,18 @@ if (weekdayMap.hasOwnProperty(dn)) {
           icon:      { url: `https://maps.google.com/mapfiles/ms/icons/${col}-dot.png` },
           title:     tooltipTitle
         });
-
-        // Kalendarz: data reprezentowana przez marker (najbliższe wydarzenie z grupy)
-        marker._eventDateYMD = fmtYMDLocal(s0);  // s0 masz zdefiniowane wyżej: const s0 = first.s;
-        // Zapisz marker do globalnej listy
+        
+        // — KALENDARZ: start/koniec (YYYY-MM-DD) i godzina startu (HH:MM) —
+        marker._startYMD  = fmtYMDLocal(s0);
+        marker._endYMD    = fmtYMDLocal(e0);
+        marker._startHM   = `${String(s0.getHours()).padStart(2,'0')}:${String(s0.getMinutes()).padStart(2,'0')}`;
+        
+        // (opcjonalnie zostawione ze starej wersji – nie szkodzi)
+        marker._eventDateYMD = fmtYMDLocal(s0);
+        
+        // Zapisz do globalnej listy widocznych markerów
         window._allMarkers.push(marker);
+
         
         // stan nawigacji dla markera
         marker.customIndex = 0;           // start od 1. wydarzenia (indeks 0)
@@ -1370,7 +1405,12 @@ if (weekdayMap.hasOwnProperty(dn)) {
       const btnNextY = document.getElementById('calNextYear');
       const btnToday = document.getElementById('calToday');
       const btnClose = document.getElementById('calClose');
-    
+
+      // Checkboxy: Start / Stop / Trwa
+      const optS = document.getElementById('calOptStart');
+      const optE = document.getElementById('calOptEnd');
+      const optM = document.getElementById('calOptMid');
+      
       if (!calModal || !calTitle || !calGrid) return; // bezpieczeństwo
     
       // Stan
@@ -1378,17 +1418,36 @@ if (weekdayMap.hasOwnProperty(dn)) {
       const dayNames   = ['Pn','Wt','Śr','Cz','Pt','So','Nd']; // poniedziałek jako pierwszy
       let cur = new Date();  // bieżący „widok” kalendarza (zmieniamy tu miesiąc/rok)
 
-      // Zwraca Mapę: 'YYYY-MM-DD' -> liczba markerów, które są teraz na mapie (po filtrze/szukaj)
-      function getVisibleDayCounts() {
-        const counts = new Map();
+      // Mapuje 'YYYY-MM-DD' -> { sOnly, mid, eOnly, single }
+      function getVisibleDayBuckets() {
+        const buckets = new Map();
         const arr = window._allMarkers || [];
+      
+        const inc = (ymd, key) => {
+          const o = buckets.get(ymd) || { sOnly:0, mid:0, eOnly:0, single:0 };
+          o[key] = (o[key] || 0) + 1;
+          buckets.set(ymd, o);
+        };
+      
         for (const mk of arr) {
-          if (mk && typeof mk.getMap === 'function' && mk.getMap() && mk._eventDateYMD) {
-            const key = mk._eventDateYMD;
-            counts.set(key, (counts.get(key) || 0) + 1);
+          if (!mk || typeof mk.getMap !== 'function' || !mk.getMap()) continue;
+          const a = mk._startYMD, b = mk._endYMD;
+          if (!a || !b) continue;
+      
+          // jeśli jednodniowe – zlicz jako "single"
+          if (a === b) { inc(a, 'single'); continue; }
+      
+          // iteruj kolejne dni od a do b (włącznie)
+          const start = new Date(a), end = new Date(b);
+          start.setHours(0,0,0,0); end.setHours(0,0,0,0);
+          for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+            const ymd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            if (ymd === a) inc(ymd, 'sOnly');
+            else if (ymd === b) inc(ymd, 'eOnly');
+            else inc(ymd, 'mid');
           }
         }
-        return counts;
+        return buckets;
       }
       
       cur.setDate(1);        // ustaw na 1. dzień miesiąca
@@ -1403,9 +1462,8 @@ if (weekdayMap.hasOwnProperty(dn)) {
         // Wyczyszczenie siatki
         calGrid.innerHTML = '';
 
-        const counts = getVisibleDayCounts();
+        const buckets = getVisibleDayBuckets();
         const pad = n => String(n).padStart(2,'0');
-
         
         // Nagłówki dni
         for (const dn of dayNames) {
@@ -1470,15 +1528,38 @@ if (weekdayMap.hasOwnProperty(dn)) {
             cell.classList.add('cal-today');
           }
 
-          // badge z liczbą widocznych wydarzeń w tym dniu
+          // Jedna duża liczba wg. Start/Stop/Trwa
           const ymd = `${cellDate.getFullYear()}-${String(cellDate.getMonth()+1).padStart(2,'0')}-${String(cellDate.getDate()).padStart(2,'0')}`;
-          const c = counts.get(ymd);
-          if (c) {
+          const b = buckets.get(ymd) || { sOnly:0, mid:0, eOnly:0, single:0 };
+          
+          const sOn = !!(optS?.checked);
+          const eOn = !!(optE?.checked);
+          const mOn = !!(optM?.checked);
+          
+          let total = 0;
+          if (sOn && eOn) { 
+            // tylko jednodniowe
+            total += b.single;
+          } else if (sOn && !eOn) {
+            // starty (wlicz jednodniowe jako start)
+            total += b.sOnly + b.single;
+          } else if (!sOn && eOn) {
+            // końce (wlicz jednodniowe jako koniec)
+            total += b.eOnly + b.single;
+          } else {
+            // nic nie zaznaczono z S/E → licz tylko "Trwa" (jeśli włączone)
+          }
+          
+          // dorzuć "Trwa" jeśli zaznaczone
+          if (mOn) total += b.mid;
+          
+          // wstaw liczbę na środku kratki (bez kółka)
+          if (total > 0) {
             cell.classList.add('cal-has');
-            const badge = document.createElement('span');
-            badge.className = 'cal-badge';
-            badge.textContent = c;
-            cell.appendChild(badge);
+            const cnt = document.createElement('div');
+            cnt.className = 'cal-count';
+            cnt.textContent = (total > 99) ? '99+' : String(total);
+            cell.appendChild(cnt);
           }
           
           calGrid.appendChild(cell);
@@ -1519,6 +1600,11 @@ if (weekdayMap.hasOwnProperty(dn)) {
       btnClose ?.addEventListener('click', () => { 
         calModal.style.display = 'none'; 
       });
+
+      // Zmiana opcji → przerysuj kalendarz
+      optS?.addEventListener('change', () => renderCalendar(cur));
+      optE?.addEventListener('change', () => renderCalendar(cur));
+      optM?.addEventListener('change', () => renderCalendar(cur));
     
       // Klik w tło modala — jeśli chcesz zamykać (opcjonalnie, gdy modal ma tło/overlay)
       // calModal.addEventListener('click', (e)=>{ if(e.target===calModal) calModal.style.display='none'; });
