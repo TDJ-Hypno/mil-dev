@@ -279,6 +279,22 @@
       gap: 8px 12px;
     }
 
+    /* Kalendarz: dni z wydarzeniami */
+    .cal-has { position: relative; background: #fffef0; }
+    .cal-badge {
+      position: absolute; left: 6px; top: 6px;
+      font-size: 11px; line-height: 18px; padding: 0 6px;
+      background: #ffd54f; border: 1px solid #888; border-radius: 10px;
+    }
+
+    /* Kalendarz: dni z wydarzeniami (badge) */
+    .cal-has { position: relative; background: #fffef0; }
+    .cal-badge {
+      position: absolute; left: 6px; top: 6px;
+      font-size: 11px; line-height: 18px; padding: 0 6px;
+      background: #ffd54f; border: 1px solid #888; border-radius: 10px;
+    }
+
     
   </style>
 </head>
@@ -306,7 +322,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.194)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.195)</div>
 
   <div class="info-panel" id="calendarPanel" style="left: 220px;">
     <img class="legend-icon" src="kalendarz.svg" alt="Kalendarz">
@@ -781,11 +797,21 @@
         });
     }
 
+    // helper: lokalna data YYYY-MM-DD (dla kalendarza)
+    function fmtYMDLocal(d) {
+      if (!d) return '';
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    
     function displayEvents(startDate, endDate) {
 
       // usuń stare markery
       markers.forEach(m => m.setMap(null));
       markers = [];
+
+      // kalendarz: wyzeruj listę aktualnych markerów (po filtrze/szukaj)
+      window._allMarkers = [];
       
       const now = new Date(), today = new Date(now); today.setHours(0,0,0,0);
       markers.forEach(m=>m.setMap(null)); markers=[];
@@ -1033,6 +1059,11 @@ if (weekdayMap.hasOwnProperty(dn)) {
           icon:      { url: `https://maps.google.com/mapfiles/ms/icons/${col}-dot.png` },
           title:     tooltipTitle
         });
+
+        // Kalendarz: data reprezentowana przez marker (najbliższe wydarzenie z grupy)
+        marker._eventDateYMD = fmtYMDLocal(s0);  // s0 masz zdefiniowane wyżej: const s0 = first.s;
+        // Zapisz marker do globalnej listy
+        window._allMarkers.push(marker);
         
         // stan nawigacji dla markera
         marker.customIndex = 0;           // start od 1. wydarzenia (indeks 0)
@@ -1343,6 +1374,20 @@ if (weekdayMap.hasOwnProperty(dn)) {
       const monthNames = ['styczeń','luty','marzec','kwiecień','maj','czerwiec','lipiec','sierpień','wrzesień','październik','listopad','grudzień'];
       const dayNames   = ['Pn','Wt','Śr','Cz','Pt','So','Nd']; // poniedziałek jako pierwszy
       let cur = new Date();  // bieżący „widok” kalendarza (zmieniamy tu miesiąc/rok)
+
+      // Zwraca Mapę: 'YYYY-MM-DD' -> liczba markerów, które są teraz na mapie (po filtrze/szukaj)
+      function getVisibleDayCounts() {
+        const counts = new Map();
+        const arr = window._allMarkers || [];
+        for (const mk of arr) {
+          if (mk && typeof mk.getMap === 'function' && mk.getMap() && mk._eventDateYMD) {
+            const key = mk._eventDateYMD;
+            counts.set(key, (counts.get(key) || 0) + 1);
+          }
+        }
+        return counts;
+      }
+      
       cur.setDate(1);        // ustaw na 1. dzień miesiąca
     
       function renderCalendar(d) {
@@ -1354,7 +1399,11 @@ if (weekdayMap.hasOwnProperty(dn)) {
     
         // Wyczyszczenie siatki
         calGrid.innerHTML = '';
-    
+
+        const counts = getVisibleDayCounts();
+        const pad = n => String(n).padStart(2,'0');
+
+        
         // Nagłówki dni
         for (const dn of dayNames) {
           const el = document.createElement('div');
