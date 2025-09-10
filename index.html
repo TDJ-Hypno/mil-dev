@@ -360,7 +360,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.203)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.204)</div>
 
   <div class="info-panel" id="calendarPanel" style="left: 220px;">
     <img class="legend-icon" src="kalendarz.svg" alt="Kalendarz">
@@ -663,10 +663,6 @@
 
       // Po wyrenderowaniu treści InfoWindow – podłącz nawigację
       google.maps.event.addListener(spiderInfo, 'domready', function () {
-        // Udostępnij otwieranie gotowych stron (używane przez kalendarz)
-           spiderInfo.open(map);
-        };
-        
         if (!currentMarker || !currentMarker.infoPages) return;
       
         const len = currentMarker.infoPages.length;
@@ -705,6 +701,7 @@
           if (currentMarker.customIndex !== len - 1) setPage(len - 1);
         });
       });
+
       
       loadData();
     }
