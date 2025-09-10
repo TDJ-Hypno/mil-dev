@@ -360,7 +360,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.202)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.203)</div>
 
   <div class="info-panel" id="calendarPanel" style="left: 220px;">
     <img class="legend-icon" src="kalendarz.svg" alt="Kalendarz">
@@ -636,6 +636,21 @@
         keepSpiderfied: true
       });
       const spiderInfo = new google.maps.InfoWindow();
+
+      // Udostępnij otwieranie gotowych „stron” (używane przez kalendarz)
+      window.openPagesInInfoWindow = function(pages) {
+        if (!pages || !pages.length) return;
+        // pseudo-marker na potrzeby nawigacji « ‹ › »:
+        currentMarker = { infoPages: pages, customIndex: 0 };
+        spiderInfo.setContent(pages[0]);
+        // otwórz w środku mapy (bez zaczepienia do konkretnego markera)
+        if (map && map.getCenter) {
+          spiderInfo.setPosition(map.getCenter());
+        }
+        spiderInfo.open(map);
+      };
+
+      
       window.spiderInfo = spiderInfo;
       oms.addListener('click', function(marker) {
         currentMarker = marker; // zapamiętaj, który marker ma otwarte InfoWindow
@@ -649,14 +664,7 @@
       // Po wyrenderowaniu treści InfoWindow – podłącz nawigację
       google.maps.event.addListener(spiderInfo, 'domready', function () {
         // Udostępnij otwieranie gotowych stron (używane przez kalendarz)
-        window.openPagesInInfoWindow = function(pages) {
-          if (!pages || !pages.length) return;
-          currentMarker = { infoPages: pages, customIndex: 0 };
-          spiderInfo.setContent(pages[0]);
-          if (map && map.getCenter) {
-            spiderInfo.setPosition(map.getCenter()); // pokaż na środku mapy
-          }
-          spiderInfo.open(map);
+           spiderInfo.open(map);
         };
         
         if (!currentMarker || !currentMarker.infoPages) return;
@@ -1746,7 +1754,6 @@ if (dn && weekdayMap.hasOwnProperty(dn)) {
         );
       
         // zamknij modal kalendarza i pokaż szczegóły
-        calModal.style.display = 'none';
         if (window.openPagesInInfoWindow) {
           window.openPagesInInfoWindow(pagesWithTitle);
         }
