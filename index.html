@@ -862,25 +862,26 @@
       
       function fmtDate(s){ const d=new Date(s); return d.toISOString().replace(/-|:|\.\d{3}/g,''); }
 
-      // --- przygotuj listę wydarzeń z przeliczonymi datami ---
-      let items = eventsData.map(ev => {
-        // 1) parsujemy oryginalne daty
-        let s = new Date(ev['Data od']),
-            e = new Date(ev['Data do']);
-        // 2) recalc dla Dzien_tygodnia
-        const weekdayMap = {
-  niedziela:0, poniedziałek:1, wtorek:2,
-  środa:3, czwartek:4, piątek:5, sobota:6
-}; 
-let dn = (ev['Dzien_tygodnia']||'').toLowerCase().trim();
-if (weekdayMap.hasOwnProperty(dn)) {
+      // 2) recalc dla Dzien_tygodnia
+      const normalize = (str) => (str || '').toLowerCase().trim()
+        .replace(/ą/g,'a').replace(/ć/g,'c').replace(/ę/g,'e').replace(/ł/g,'l')
+        .replace(/ń/g,'n').replace(/ó/g,'o').replace(/ś/g,'s').replace(/ż|ź/g,'z');
+      
+      const weekdayMap = {
+        niedziela:0, poniedzialek:1, wtorek:2,
+        sroda:3, czwartek:4, piatek:5, sobota:6
+      };
+
+let dn = normalize(ev['Dzien_tygodnia']);
+
+if (dn && weekdayMap.hasOwnProperty(dn)) {
   const base = new Date(startDate);
   base.setHours(0,0,0,0);
   const origS = new Date(s), origE = new Date(e);
 
-  // parsujemy wykluczenia (lokalnie, bez pułapki UTC; obsługa , z/bez spacji i zakresów z |)
+  // — WYKLUCZENIA — działają teraz dla KAŻDEGO wydarzenia —
   const parseYMDLocal = (str) => {
-    const [y, m, d] = str.trim().split(/[\.\-\/]/).map(n => parseInt(n, 10));
+    const [y, m, d] = (str || '').trim().split(/[\.\-\/]/).map(n => parseInt(n, 10));
     if (!y || !m || !d) return null;
     return new Date(y, m - 1, d); // lokalna północ
   };
@@ -888,26 +889,27 @@ if (weekdayMap.hasOwnProperty(dn)) {
   let excluded = [];
   const rawEx = (ev['Wyklucz'] || '').trim();
   if (rawEx) {
-    const parts = rawEx.split(/\s*,\s*/); // dzielenie po przecinku z opcjonalnymi spacjami
+    const parts = rawEx.split(/\s*,\s*/);
     for (const part of parts) {
       if (!part) continue;
       if (part.includes('|')) {
         const [a, b] = part.split('|').map(parseYMDLocal);
         if (a && b) {
-          const from = new Date(a); from.setHours(0, 0, 0, 0);
-          const to   = new Date(b); to.setHours(23, 59, 59, 999);
+          const from = new Date(a); from.setHours(0,0,0,0);
+          const to   = new Date(b); to.setHours(23,59,59,999);
           excluded.push({ from, to });
         }
       } else {
         const d = parseYMDLocal(part);
         if (d) {
-          const from = new Date(d); from.setHours(0, 0, 0, 0);
-          const to   = new Date(d); to.setHours(23, 59, 59, 999);
+          const from = new Date(d); from.setHours(0,0,0,0);
+          const to   = new Date(d); to.setHours(23,59,59,999);
           excluded.push({ from, to });
         }
       }
     }
   }
+
 
   // szukamy pierwszej dozwolonej daty zgodnej z dniem tygodnia
   let found = false;
@@ -934,7 +936,13 @@ if (weekdayMap.hasOwnProperty(dn)) {
 
   if (!found) return null; // nie znaleziono dozwolonej daty – pomiń wydarzenie
 }
-        return { ev, s, e };
+      // Jednorazowe: jeśli data startu wpada w „Wyklucz” → pomiń
+      const sDayLocal = new Date(s); sDayLocal.setHours(0,0,0,0);
+      const isExcludedOnce = excluded.some(({from, to}) => sDayLocal >= from && sDayLocal <= to);
+      if (!dn && isExcludedOnce) return null;
+
+      
+      return { ev, s, e };
       })
       // 3) filtruj wg przedziału
       .filter(Boolean)
