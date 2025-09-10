@@ -14,6 +14,38 @@
  
   <style>
     html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; }
+
+    /* Modal szczegółów dnia (nad kalendarzem) */
+    #dayDetailModal{
+      position: fixed;
+      left: 50%;
+      top: 60px;
+      transform: translateX(-50%);
+      width: min(92vw, 720px);
+      max-height: 78vh;
+      overflow: auto;
+      background: #fff;
+      border: 1px solid #999;
+      border-radius: 10px;
+      padding: 10px;
+      z-index: 3100; /* wyżej niż #calendarModal */
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      font-family: 'Arial Black', sans-serif;
+      font-size: 12px;
+    }
+    .daydetail-header{
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      margin-bottom:8px; position:sticky; top:0; background:#fff; z-index:1;
+    }
+    #dayDetailTitle{ font-weight:bold; }
+    .daydetail-content{ margin-bottom:8px; }
+    .daydetail-footer{
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      position:sticky; bottom:0; background:#fff; padding-top:6px; border-top: 1px dashed #ccc;
+    }
+    .daydetail-counter{ min-width: 64px; text-align:center; }
+
+    
     #map { height: 100%; width: 100%; }
     
     #selectedFilter {
@@ -360,7 +392,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.204)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.205)</div>
 
   <div class="info-panel" id="calendarPanel" style="left: 220px;">
     <img class="legend-icon" src="kalendarz.svg" alt="Kalendarz">
@@ -570,27 +602,45 @@
   </div>
 
   <!-- Modal Kalendarza -->
-  <div id="calendarModal">
-    <div class="cal-header">
-      <span class="spacer"></span>
-        <button id="calPrevYear"  type="button">«</button>
-        <button id="calPrevMonth" type="button">‹</button>
-        <span id="calTitle">Miesiąc RRRR</span>
-        <button id="calNextMonth" type="button">›</button>
-        <button id="calNextYear"  type="button">»</button>
-        <button id="calClose"     type="button" class="custom-button" style="margin-left:8px;">×</button>
+    <div id="calendarModal">
+      <div class="cal-header">
+        <span class="spacer"></span>
+          <button id="calPrevYear"  type="button">«</button>
+          <button id="calPrevMonth" type="button">‹</button>
+          <span id="calTitle">Miesiąc RRRR</span>
+          <button id="calNextMonth" type="button">›</button>
+          <button id="calNextYear"  type="button">»</button>
+          <button id="calClose"     type="button" class="custom-button" style="margin-left:8px;">×</button>
+      </div>
+      <div id="calGrid"></div>
+      <div class="cal-footer" id="calLegend">
+        <label><input type="checkbox" id="calOptStart" checked> Start</label>
+        <label><input type="checkbox" id="calOptEnd"   checked> Stop</label>
+        <label><input type="checkbox" id="calOptMid"   checked> Trwa</label>
+        <div style="flex:1"></div>
+        <button id="calToday" type="button" class="custom-button">Dziś</button>
+      </div>
     </div>
-    <div id="calGrid"></div>
-    <div class="cal-footer" id="calLegend">
-      <label><input type="checkbox" id="calOptStart" checked> Start</label>
-      <label><input type="checkbox" id="calOptEnd"   checked> Stop</label>
-      <label><input type="checkbox" id="calOptMid"   checked> Trwa</label>
-      <div style="flex:1"></div>
-      <button id="calToday" type="button" class="custom-button">Dziś</button>
+  
+    <!-- Modal: Szczegóły wydarzeń w wybranym dniu (nad kalendarzem) -->
+  <div id="dayDetailModal" style="display:none;">
+    <div class="daydetail-header">
+      <div id="dayDetailTitle">Wydarzenia</div>
+      <button id="dayDetailClose" type="button" class="custom-button">×</button>
     </div>
-
+  
+    <div id="dayDetailContent" class="daydetail-content">
+      <!-- tu wstrzykujemy stronę HTML konkretnego wydarzenia -->
+    </div>
+  
+    <div class="daydetail-footer">
+      <button id="dayNavFirst" type="button" class="custom-button">«</button>
+      <button id="dayNavPrev"  type="button" class="custom-button">‹</button>
+      <span id="dayNavCounter" class="daydetail-counter">1 / 1</span>
+      <button id="dayNavNext"  type="button" class="custom-button">›</button>
+      <button id="dayNavLast"  type="button" class="custom-button">»</button>
+    </div>
   </div>
-
   
   <!-- Modal Ustawień -->
   <div id="settingsModal" style="display:none;
@@ -1468,6 +1518,20 @@ if (dn && weekdayMap.hasOwnProperty(dn)) {
       const optS = document.getElementById('calOptStart');
       const optE = document.getElementById('calOptEnd');
       const optM = document.getElementById('calOptMid');
+
+      // Modal szczegółów dnia (nad kalendarzem)
+      const dayDetailModal   = document.getElementById('dayDetailModal');
+      const dayDetailTitle   = document.getElementById('dayDetailTitle');
+      const dayDetailContent = document.getElementById('dayDetailContent');
+      const dayDetailClose   = document.getElementById('dayDetailClose');
+      const dayNavFirst = document.getElementById('dayNavFirst');
+      const dayNavPrev  = document.getElementById('dayNavPrev');
+      const dayNavNext  = document.getElementById('dayNavNext');
+      const dayNavLast  = document.getElementById('dayNavLast');
+      const dayNavCounter = document.getElementById('dayNavCounter');
+      
+      let dayDetailState = { pages: [], index: 0 };
+
       
       if (!calModal || !calTitle || !calGrid) return; // bezpieczeństwo
     
@@ -1561,6 +1625,48 @@ if (dn && weekdayMap.hasOwnProperty(dn)) {
         if (sOn && eOn && mOn)   return 'kończą i zaczynają się lub trwają';
         return 'spełniają wybrane warunki';
       }
+
+      function setDayDetailPage(i){
+        const n = dayDetailState.pages.length;
+        if (i < 0 || i >= n) return;
+        dayDetailState.index = i;
+        dayDetailContent.innerHTML = dayDetailState.pages[i];
+        dayNavCounter.textContent = `${i+1} / ${n}`;
+      
+        // podłącz lokalną nawigację jeśli w HTML strony są przyciski first/prev/next/last
+        const byId = id => document.getElementById(id);
+        const firstBtn = byId('firstEventBtn');
+        const prevBtn  = byId('prevEventBtn');
+        const nextBtn  = byId('nextEventBtn');
+        const lastBtn  = byId('lastEventBtn');
+      
+        const go = (idx) => setDayDetailPage(idx);
+      
+        if (firstBtn) { firstBtn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (dayDetailState.index !== 0) go(0); }); }
+        if (prevBtn)  { prevBtn .addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (dayDetailState.index > 0) go(dayDetailState.index-1); }); }
+        if (nextBtn)  { nextBtn .addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (dayDetailState.index < n-1) go(dayDetailState.index+1); }); }
+        if (lastBtn)  { lastBtn .addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (dayDetailState.index !== n-1) go(n-1); }); }
+      }
+      
+      function openDayDetail(pages, title){
+        if (!pages || !pages.length) return;
+        dayDetailState = { pages: pages.slice(), index: 0 };
+        dayDetailTitle.textContent = title || 'Wydarzenia';
+        dayDetailModal.style.display = 'block';
+        setDayDetailPage(0);
+      }
+      
+      function closeDayDetail(){
+        dayDetailModal.style.display = 'none';
+      }
+      
+      // przyciski na dole modala
+      dayDetailClose?.addEventListener('click', () => closeDayDetail());
+      dayNavFirst   ?.addEventListener('click', () => setDayDetailPage(0));
+      dayNavPrev    ?.addEventListener('click', () => setDayDetailPage(dayDetailState.index - 1));
+      dayNavNext    ?.addEventListener('click', () => setDayDetailPage(dayDetailState.index + 1));
+      dayNavLast    ?.addEventListener('click', () => setDayDetailPage(dayDetailState.pages.length - 1));
+      window.addEventListener('keydown', (e)=>{ if (e.key==='Escape') closeDayDetail(); });
 
       
       cur.setDate(1);        // ustaw na 1. dzień miesiąca
@@ -1746,14 +1852,10 @@ if (dn && weekdayMap.hasOwnProperty(dn)) {
         const dateTxt = ymd.replace(/-/g, '.');
         const title = `Wydarzenia, które ${phrase} w dniu ${dateTxt}`;
       
-        const pagesWithTitle = pages.map(html =>
-          `<div class="cal-detail-title" style="font-weight:bold;margin:4px 0;">${title}</div>` + html
-        );
-      
-        // zamknij modal kalendarza i pokaż szczegóły
-        if (window.openPagesInInfoWindow) {
-          window.openPagesInInfoWindow(pagesWithTitle);
-        }
+          // tytuł pokazujemy w headerze nowego modala
+          // a strony wstrzykujemy bezpośrednio (bez dolepiania tytułu do każdej)
+          openDayDetail(pages, title);
+
       });
 
       
