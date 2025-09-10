@@ -360,7 +360,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.200)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.201)</div>
 
   <div class="info-panel" id="calendarPanel" style="left: 220px;">
     <img class="legend-icon" src="kalendarz.svg" alt="Kalendarz">
@@ -879,7 +879,45 @@
     
       // 2) dzień tygodnia (znormalizowany)
       let dn = normalize(ev['Dzien_tygodnia']);
-    
+      
+  // — WYKLUCZENIA — działają teraz dla KAŻDEGO wydarzenia —
+    const parseYMDLocal = (str) => {
+      const [y, m, d] = (str || '').trim().split(/[\.\-\/]/).map(n => parseInt(n, 10));
+      if (!y || !m || !d) return null;
+      return new Date(y, m - 1, d); // lokalna północ
+    };
+  
+    let excluded = [];
+    {
+      const rawEx = (ev['Wyklucz'] || '').trim();
+      if (rawEx) {
+        const parts = rawEx.split(/\s*,\s*/);
+        for (const part of parts) {
+          if (!part) continue;
+          if (part.includes('|')) {
+            const [a, b] = part.split('|').map(parseYMDLocal);
+            if (a && b) {
+              const from = new Date(a); from.setHours(0,0,0,0);
+              const to   = new Date(b); to.setHours(23,59,59,999);
+              excluded.push({ from, to });
+            }
+          } else {
+            const d = parseYMDLocal(part);
+            if (d) {
+              const from = new Date(d); from.setHours(0,0,0,0);
+              const to   = new Date(d); to.setHours(23,59,59,999);
+              excluded.push({ from, to });
+            }
+          }
+        }
+      }
+    }
+        
+if (dn && weekdayMap.hasOwnProperty(dn)) {
+  const base = new Date(startDate);
+  base.setHours(0,0,0,0);
+  const origS = new Date(s), origE = new Date(e);
+
   // szukamy pierwszej dozwolonej daty zgodnej z dniem tygodnia
   let found = false;
   let testDate = new Date(base);
