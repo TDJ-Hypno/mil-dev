@@ -392,7 +392,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.205)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.206)</div>
 
   <div class="info-panel" id="calendarPanel" style="left: 220px;">
     <img class="legend-icon" src="kalendarz.svg" alt="Kalendarz">
@@ -1540,7 +1540,7 @@ if (dn && weekdayMap.hasOwnProperty(dn)) {
       const dayNames   = ['Pn','Wt','Śr','Cz','Pt','So','Nd']; // poniedziałek jako pierwszy
       let cur = new Date();  // bieżący „widok” kalendarza (zmieniamy tu miesiąc/rok)
 
-      // Mapuje 'YYYY-MM-DD' -> { sOnly, mid, eOnly, single }
+      // Mapuje 'YYYY-MM-DD' -> { sOnly, mid, eOnly, single } liczone po KAŻDYM wydarzeniu (pg) w grupie
       function getVisibleDayBuckets() {
         const buckets = new Map();
         const arr = window._allMarkers || [];
@@ -1553,20 +1553,26 @@ if (dn && weekdayMap.hasOwnProperty(dn)) {
       
         for (const mk of arr) {
           if (!mk || typeof mk.getMap !== 'function' || !mk.getMap()) continue;
-          const a = mk._startYMD, b = mk._endYMD;
-          if (!a || !b) continue;
+          const meta = mk._pagesMeta || [];
+          for (const pg of meta) {
+            const s = pg.sYMD, e = pg.eYMD;
+            if (!s || !e) continue;
       
-          // jeśli jednodniowe – zlicz jako "single"
-          if (a === b) { inc(a, 'single'); continue; }
+            if (s === e) {
+              // jednodniowe – tylko single
+              inc(s, 'single');
+              continue;
+            }
       
-          // iteruj kolejne dni od a do b (włącznie)
-          const start = new Date(a), end = new Date(b);
-          start.setHours(0,0,0,0); end.setHours(0,0,0,0);
-          for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
-            const ymd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-            if (ymd === a) inc(ymd, 'sOnly');
-            else if (ymd === b) inc(ymd, 'eOnly');
-            else inc(ymd, 'mid');
+            // iteruj wszystkie dni od startu do końca (włącznie)
+            const start = new Date(s), end = new Date(e);
+            start.setHours(0,0,0,0); end.setHours(0,0,0,0);
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+              const ymd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+              if (ymd === s) inc(ymd, 'sOnly');
+              else if (ymd === e) inc(ymd, 'eOnly');
+              else inc(ymd, 'mid');
+            }
           }
         }
         return buckets;
