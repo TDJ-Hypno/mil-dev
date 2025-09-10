@@ -37,7 +37,12 @@
       display:flex; align-items:center; justify-content:space-between; gap:8px;
       margin-bottom:8px; position:sticky; top:0; background:#fff; z-index:1;
     }
-    #dayDetailTitle{ font-weight:bold; }
+    #dayDetailTitle{
+      font-weight: bold;
+      font-style: italic;
+      font-size: 16px;   /* było 12px w modalu -> +2 “oczka” (12→14→16) */
+    }
+    
     .daydetail-content{ margin-bottom:8px; }
     .daydetail-footer{
       display:flex; align-items:center; justify-content:center; gap:8px;
@@ -392,7 +397,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.206)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.207)</div>
 
   <div class="info-panel" id="calendarPanel" style="left: 220px;">
     <img class="legend-icon" src="kalendarz.svg" alt="Kalendarz">
