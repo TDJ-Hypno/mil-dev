@@ -360,7 +360,7 @@
   </div>
 
   <div id="map"></div>
-  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.201)</div>
+  <div class="info-panel">TDj "Hypno" Piotr Smoleń (0.202)</div>
 
   <div class="info-panel" id="calendarPanel" style="left: 220px;">
     <img class="legend-icon" src="kalendarz.svg" alt="Kalendarz">
@@ -636,6 +636,7 @@
         keepSpiderfied: true
       });
       const spiderInfo = new google.maps.InfoWindow();
+      window.spiderInfo = spiderInfo;
       oms.addListener('click', function(marker) {
         currentMarker = marker; // zapamiętaj, który marker ma otwarte InfoWindow
         const html = (marker.infoPages && marker.infoPages.length)
@@ -647,6 +648,17 @@
 
       // Po wyrenderowaniu treści InfoWindow – podłącz nawigację
       google.maps.event.addListener(spiderInfo, 'domready', function () {
+        // Udostępnij otwieranie gotowych stron (używane przez kalendarz)
+        window.openPagesInInfoWindow = function(pages) {
+          if (!pages || !pages.length) return;
+          currentMarker = { infoPages: pages, customIndex: 0 };
+          spiderInfo.setContent(pages[0]);
+          if (map && map.getCenter) {
+            spiderInfo.setPosition(map.getCenter()); // pokaż na środku mapy
+          }
+          spiderInfo.open(map);
+        };
+        
         if (!currentMarker || !currentMarker.infoPages) return;
       
         const len = currentMarker.infoPages.length;
@@ -1108,6 +1120,15 @@ if (dn && weekdayMap.hasOwnProperty(dn)) {
         
         // --- Zbuduj wszystkie strony okienka dla tej grupy ---
         const infoPages = group.map((item, idx) => renderContent(item, idx));
+
+        // Metadane każdej strony (przydadzą się kalendarzowi)
+        const pagesMeta = group.map((item, idx) => ({
+          idx,
+          sYMD: fmtYMDLocal(item.s),
+          eYMD: fmtYMDLocal(item.e),
+          startHM: `${String(item.s.getHours()).padStart(2,'0')}:${String(item.s.getMinutes()).padStart(2,'0')}`
+        }));
+
         
         // --- Utwórz marker i podłącz do OMS ---
         const marker = new google.maps.Marker({
@@ -1134,6 +1155,8 @@ if (dn && weekdayMap.hasOwnProperty(dn)) {
         // stan nawigacji dla markera
         marker.customIndex = 0;           // start od 1. wydarzenia (indeks 0)
         marker.infoPages   = infoPages;   // wszystkie „ekrany” okienka
+        marker._pagesMeta = pagesMeta;
+
         marker.customInfo  = infoPages[0];// zgodność wsteczna
 
         // ↓↓↓ DODANE: treść do wyszukiwania + (opcjonalnie) surowa grupa
@@ -1479,6 +1502,61 @@ if (dn && weekdayMap.hasOwnProperty(dn)) {
         }
         return buckets;
       }
+
+      // Zbuduj listę stron (HTML) dla danego dnia zgodnie z checkboxami Start/Stop/Trwa
+      function buildPagesForDay(ymd) {
+        const sOn = !!(optS?.checked);
+        const eOn = !!(optE?.checked);
+        const mOn = !!(optM?.checked);
+      
+        const pages = [];
+        const arr = window._allMarkers || [];
+      
+        for (const mk of arr) {
+          if (!mk || typeof mk.getMap !== 'function' || !mk.getMap()) continue;
+          const meta = mk._pagesMeta || [];
+          for (const pg of meta) {
+            const s = pg.sYMD, e = pg.eYMD;
+            if (!s || !e) continue;
+      
+            const isSingle    = (s === ymd && e === ymd);
+            const isStartOnly = (s === ymd && e !== ymd);
+            const isEndOnly   = (e === ymd && s !== ymd);
+            const isMid       = (s < ymd && ymd < e); // porównanie leksykalne działa dla RRRR-MM-DD
+      
+            // baza wg Start/Stop (jak w licznikach)
+            const base = (sOn && eOn) ? isSingle
+                       : (sOn ? (isStartOnly || isSingle)
+                              : (eOn ? (isEndOnly || isSingle) : false));
+      
+            const include = base || (mOn && isMid); // "Trwa" zawsze dodaje dni pośrednie
+      
+            if (include && mk.infoPages && mk.infoPages[pg.idx]) {
+              pages.push({ html: mk.infoPages[pg.idx], key: `${s} ${pg.startHM || ''}` });
+            }
+          }
+        }
+      
+        // sort rosnąco po dacie/godzinie startu
+        pages.sort((a,b) => a.key.localeCompare(b.key));
+        return pages.map(p => p.html);
+      }
+      
+      // Fraza do tytułu w zależności od kombinacji checkboxów
+      function getCalPhrase() {
+        const sOn = !!(optS?.checked);
+        const eOn = !!(optE?.checked);
+        const mOn = !!(optM?.checked);
+        if (sOn && !eOn && !mOn) return 'rozpoczynają się';
+        if (!sOn && eOn && !mOn) return 'kończą się';
+        if (!sOn && !eOn && mOn) return 'trwają';
+        if (sOn && eOn && !mOn)  return 'rozpoczynają się i kończą ';
+        if (sOn && !eOn && mOn)  return 'rozpoczynają się lub trwają';
+        if (!sOn && eOn && mOn)  return 'kończą się lub trwają';
+        if (sOn && eOn && mOn)   return 'kończą i zaczynają się lub trwają';
+        return 'spełniają wybrane warunki';
+      }
+
       
       cur.setDate(1);        // ustaw na 1. dzień miesiąca
     
@@ -1564,6 +1642,7 @@ if (dn && weekdayMap.hasOwnProperty(dn)) {
 
           // Jedna duża liczba wg. Start/Stop/Trwa
           const ymd = `${cellDate.getFullYear()}-${String(cellDate.getMonth()+1).padStart(2,'0')}-${String(cellDate.getDate()).padStart(2,'0')}`;
+          cell.dataset.ymd = ymd;
           const b = buckets.get(ymd) || { sOnly:0, mid:0, eOnly:0, single:0 };
           
           const sOn = !!(optS?.checked);
@@ -1586,6 +1665,8 @@ if (dn && weekdayMap.hasOwnProperty(dn)) {
           
           // dorzuć "Trwa" jeśli zaznaczone
           if (mOn) total += b.mid;
+
+          cell.dataset.total = String(total);
           
           // wstaw liczbę na środku kratki (bez kółka)
           if (total > 0) {
@@ -1643,6 +1724,35 @@ if (dn && weekdayMap.hasOwnProperty(dn)) {
       // Klik w tło modala — jeśli chcesz zamykać (opcjonalnie, gdy modal ma tło/overlay)
       // calModal.addEventListener('click', (e)=>{ if(e.target===calModal) calModal.style.display='none'; });
 
+      // Klik w komórkę kalendarza → otwórz szczegóły
+      calGrid.addEventListener('click', (e) => {
+        const cell = e.target.closest('.cal-cell');
+        if (!cell) return;
+        const total = parseInt(cell.dataset.total || '0', 10);
+        if (!total) return;
+      
+        const ymd = cell.dataset.ymd;
+        if (!ymd) return;
+      
+        const pages = buildPagesForDay(ymd);
+        if (!pages.length) return;
+      
+        const phrase = getCalPhrase(); // "rozpoczynają się" / "kończą się" / "trwają" / itd.
+        const dateTxt = ymd.replace(/-/g, '.');
+        const title = `Wydarzenia, które ${phrase} w dniu ${dateTxt}`;
+      
+        const pagesWithTitle = pages.map(html =>
+          `<div class="cal-detail-title" style="font-weight:bold;margin:4px 0;">${title}</div>` + html
+        );
+      
+        // zamknij modal kalendarza i pokaż szczegóły
+        calModal.style.display = 'none';
+        if (window.openPagesInInfoWindow) {
+          window.openPagesInInfoWindow(pagesWithTitle);
+        }
+      });
+
+      
       // Publiczny odświeżacz – wołaj po filtrze/szukaj, jeśli modal jest otwarty
       window.refreshCalendar = function(){
         if (calModal && calModal.style.display === 'block') {
